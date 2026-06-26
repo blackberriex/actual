@@ -1,9 +1,9 @@
 :root {
   /* Page backgrounds */
-  --color-pageBackground: #f3f3f4;
+  --color-pageBackground: #fcfcfd;
   --color-pageBackgroundModalActive: #e4e4e7;
-  --color-pageBackgroundTopLeft: #f3f3f4;
-  --color-pageBackgroundBottomRight: #f3f3f4;
+  --color-pageBackgroundTopLeft: #fcfcfd;
+  --color-pageBackgroundBottomRight: #fcfcfd;
   --color-pageBackgroundLineTop: #e4e4e7;
   --color-pageBackgroundLineMid: #e4e4e7;
   --color-pageBackgroundLineBottom: #e4e4e7;
@@ -18,13 +18,13 @@
   --color-pageTextLinkLight: #71717a;
 
   /* Cards */
-  --color-cardBackground: #fcfcfd;
+  --color-cardBackground: #ffffff; /* pure white for contrast on #fcfcfd */
   --color-cardBorder: #e4e4e7;
   --color-cardShadow: rgba(0, 0, 0, 0.03);
 
   /* Tables */
-  --color-tableBackground: #fcfcfd;
-  --color-tableRowBackgroundAlternate: #fcfcfd;
+  --color-tableBackground: #ffffff; /* pure white for contrast on #fcfcfd */
+  --color-tableRowBackgroundAlternate: #ffffff;
   --color-tableRowBackgroundHover: #f3f3f4;
   --color-tableText: #18181b;
   --color-tableTextItemAdded: var(--color-tableText);
@@ -71,8 +71,8 @@
   --color-sidebarBudgetName: #09090b;
 
   /* Menus */
-  --color-menuBackground: #fcfcfd;
-  --color-menuItemBackground: #fcfcfd;
+  --color-menuBackground: #ffffff;
+  --color-menuItemBackground: #ffffff;
   --color-menuItemBackgroundHover: #f3f3f4;
   --color-menuItemText: #18181b;
   --color-menuItemTextHover: #000000;
@@ -81,14 +81,14 @@
   --color-menuBorder: #e4e4e7;
   --color-menuBorderHover: #000000;
   --color-menuKeybindingText: #71717a;
-  --color-menuAutoCompleteBackground: #fcfcfd;
+  --color-menuAutoCompleteBackground: #ffffff;
   --color-menuAutoCompleteBackgroundHover: #f3f3f4;
   --color-menuAutoCompleteText: #18181b;
   --color-menuAutoCompleteTextHeader: #71717a;
   --color-menuAutoCompleteItemText: var(--color-menuItemText);
 
   /* Modals */
-  --color-modalBackground: #fcfcfd;
+  --color-modalBackground: #ffffff;
   --color-modalBorder: #e4e4e7;
   
   /* Mobile specific style options */
@@ -96,7 +96,7 @@
   --color-mobileHeaderText: #18181b;
   --color-mobileHeaderTextSubdued: #71717a;
   --color-mobileHeaderTextHover: rgba(0, 0, 0, 0.05);
-  --color-mobilePageBackground: #f3f3f4;
+  --color-mobilePageBackground: #fcfcfd;
   --color-mobileNavBackground: #fcfcfd;
   --color-mobileNavItem: #71717a;
   --color-mobileNavItemSelected: #000000;
