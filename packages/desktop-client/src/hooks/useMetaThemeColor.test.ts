@@ -112,18 +112,7 @@ describe('useMetaThemeColor', () => {
       expect(document.body.style.backgroundColor).toBe('rgb(34, 34, 34)');
     });
 
-    it('re-runs effect when darkThemePreference changes', () => {
-      setCssVar('--color-mobileViewTheme', '#aaa');
-      const { rerender } = renderHook(() =>
-        useMetaThemeColor('var(--color-mobileViewTheme)'),
-      );
-      expect(document.body.style.backgroundColor).toBe('rgb(170, 170, 170)');
 
-      setCssVar('--color-mobileViewTheme', '#bbb');
-      vi.mocked(usePreferredDarkTheme).mockReturnValue(['midnight', vi.fn()]);
-      rerender();
-      expect(document.body.style.backgroundColor).toBe('rgb(187, 187, 187)');
-    });
 
     it('re-runs effect when system color scheme changes', async () => {
       let matches = false;

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 
 import darkThemeCss from '@actual-app/components/themes/dark.css?inline';
 import lightThemeCss from '@actual-app/components/themes/light.css?inline';
-import midnightThemeCss from '@actual-app/components/themes/midnight.css?inline';
 import paletteCss from '@actual-app/components/themes/palette.css?inline';
 import type { DarkTheme, Theme } from '@actual-app/core/types/prefs';
 
@@ -18,7 +17,6 @@ import type { BaseTheme } from './customThemes';
 const themes = {
   light: { name: 'Light', colors: lightThemeCss },
   dark: { name: 'Dark', colors: darkThemeCss },
-  midnight: { name: 'Midnight', colors: midnightThemeCss },
   auto: { name: 'System default', colors: darkThemeCss },
 } as const;
 
@@ -30,7 +28,6 @@ export const themeOptions = Object.entries(themes).map(
 
 export const darkThemeOptions = Object.entries({
   dark: themes.dark,
-  midnight: themes.midnight,
 }).map(([key, { name }]) => [key, name] as [DarkTheme, string]);
 
 export function useTheme() {

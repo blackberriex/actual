@@ -106,7 +106,7 @@ export function ThemeInstaller({
       id: string;
       errorMessage: string;
       catalogTheme?: CatalogTheme | null;
-      baseTheme?: 'light' | 'dark' | 'midnight';
+      baseTheme?: 'light' | 'dark';
     }) => {
       setError(null);
       setErroringTheme(null);

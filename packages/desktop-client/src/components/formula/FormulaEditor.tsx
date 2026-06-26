@@ -37,7 +37,7 @@ export function FormulaEditor({
   const [activeTheme] = useTheme();
 
   const isDarkTheme = useMemo(() => {
-    if (activeTheme === 'dark' || activeTheme === 'midnight') {
+    if (activeTheme === 'dark') {
       return true;
     }
     if (activeTheme === 'auto') {
