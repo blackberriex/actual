@@ -16,7 +16,7 @@ export const styles: CSSProperties = {
   incomeHeaderHeight: 70,
   cardShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
   monthRightPadding: 5,
-  menuBorderRadius: 4,
+  menuBorderRadius: 8,
   mobileMinHeight: MOBILE_MIN_HEIGHT,
   mobileMenuItem: {
     fontSize: 17,
@@ -131,8 +131,8 @@ export const styles: CSSProperties = {
   tooltip: {
     padding: 5,
     ...shadowLarge,
-    borderWidth: 2,
-    borderRadius: 4,
+    borderWidth: 1,
+    borderRadius: 8,
     borderStyle: 'solid',
     borderColor: theme.tooltipBorder,
     backgroundColor: theme.tooltipBackground,
@@ -164,8 +164,7 @@ export const styles: CSSProperties = {
   tableContainer: {
     flex: 1,
     border: '1px solid ' + theme.tableBorder,
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
+    borderRadius: 10,
     overflow: 'hidden',
   },
 };

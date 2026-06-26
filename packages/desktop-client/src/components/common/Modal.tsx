@@ -94,7 +94,7 @@ export const Modal = ({
                 backgroundColor: 'rgba(0, 0, 0, 0.4)',
               }
             : {
-                backdropFilter: 'blur(1px) brightness(0.9)',
+                backdropFilter: 'blur(2px) brightness(0.95)',
               }),
           ...style,
         }}
@@ -126,19 +126,20 @@ export const Modal = ({
                   {...containerProps}
                   style={{
                     flex: 1,
-                    padding: 10,
+                    padding: 16,
                     willChange: 'opacity, transform',
                     maxWidth: '90vw',
                     minWidth: '90vw',
                     maxHeight: 'calc(var(--visual-viewport-height) * 0.9)',
                     minHeight: 0,
-                    borderRadius: 6,
-                    //border: '1px solid ' + theme.modalBorder,
+                    borderRadius: 16,
+                    border: '1px solid ' + theme.modalBorder,
                     color: theme.pageText,
                     backgroundColor: theme.modalBackground,
                     opacity: isHidden ? 0 : 1,
                     [`@media (min-width: ${tokens.breakpoint_small})`]: {
                       minWidth: tokens.breakpoint_small,
+                      padding: 24,
                     },
                     overflowY: 'auto',
                     ...styles.shadowLarge,

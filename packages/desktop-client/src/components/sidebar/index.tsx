@@ -41,7 +41,7 @@ export function FloatableSidebar() {
         // If not floating, the -50 takes into account the transform below
         bottom: sidebarShouldFloat ? 8 : -50,
         zIndex: 1001,
-        borderRadius: sidebarShouldFloat ? '0 6px 6px 0' : 0,
+        borderRadius: sidebarShouldFloat ? '0 8px 8px 0' : 0,
         overflow: 'hidden',
         boxShadow:
           !sidebarShouldFloat || sidebar.hidden
