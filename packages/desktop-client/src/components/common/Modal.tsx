@@ -428,7 +428,7 @@ export function ModalTitle({
       ref={inputRef}
       style={{
         fontSize: 25,
-        fontWeight: 700,
+        fontWeight: 600,
         textAlign: 'center',
         ...style,
       }}
@@ -455,7 +455,7 @@ export function ModalTitle({
           onClick={onTitleClick}
           style={{
             fontSize: 25,
-            fontWeight: 700,
+            fontWeight: 600,
             textAlign: 'center',
             ...(isEditable && styles.underlinedText),
             ...style,
@@ -468,7 +468,7 @@ export function ModalTitle({
           onClick={onTitleClick}
           style={{
             fontSize: 25,
-            fontWeight: 700,
+            fontWeight: 600,
             textAlign: 'center',
             ...(isEditable && styles.underlinedText),
             ...style,

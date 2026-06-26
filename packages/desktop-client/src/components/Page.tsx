@@ -31,6 +31,7 @@ export function PageHeader({ title, style }: PageHeaderProps) {
           flexDirection: 'row',
           fontSize: 25,
           fontWeight: 500,
+          fontFamily: 'var(--font-family-display)',
         }}
       >
         {typeof title === 'string' ? <Text>{title}</Text> : title}

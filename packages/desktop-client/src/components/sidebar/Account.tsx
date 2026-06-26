@@ -152,7 +152,7 @@ export function Account<FieldName extends SheetFields<'account'>>({
               position: 'relative',
               borderLeft: '4px solid transparent',
               ...(updated && {
-                fontWeight: 700,
+                fontWeight: 600,
                 color: theme.sidebarItemTextUpdated,
               }),
             }}

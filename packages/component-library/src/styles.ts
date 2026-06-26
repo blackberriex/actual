@@ -33,7 +33,7 @@ export const styles: CSSProperties = {
   },
   altMenuHeaderText: {
     fontSize: 13,
-    fontWeight: 700,
+    fontWeight: 600,
   },
   veryLargeText: {
     fontSize: 30,
@@ -41,7 +41,7 @@ export const styles: CSSProperties = {
   },
   largeText: {
     fontSize: 20,
-    fontWeight: 700,
+    fontWeight: 600,
     letterSpacing: 0.5,
   },
   mediumText: {

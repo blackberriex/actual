@@ -64,9 +64,9 @@ export const MonthPicker = ({
 
   const [size, setSize] = useState('small');
   const containerRef = useResizeObserver(rect => {
-    setSize(rect.width <= 400 ? 'small' : 'big');
+    setSize(rect.width <= 550 ? 'small' : 'big');
     setTargetMonthCount(
-      Math.min(Math.max(Math.floor(rect.width / 50), 12), 24),
+      Math.min(Math.max(Math.floor(rect.width / 46), 12), 24),
     );
   });
 
@@ -88,6 +88,7 @@ export const MonthPicker = ({
           flex: 1,
           alignItems: 'center',
           justifyContent: 'center',
+          gap: '2px',
         }}
       >
         <Link
@@ -135,6 +136,13 @@ export const MonthPicker = ({
           const hovered =
             hoverId === null ? false : idx >= hoverId && idx <= lastHoverId;
 
+          const nextSelected =
+            idx + 1 >= firstSelectedIndex && idx + 1 <= lastSelectedIndex;
+          const nextHovered =
+            hoverId === null ? false : idx + 1 >= hoverId && idx + 1 <= lastHoverId;
+
+          const noGapAfter = (selected && nextSelected) || (hovered && nextHovered);
+
           const current = currentMonth === month;
           const year = monthUtils.getYear(month);
 
@@ -156,12 +164,14 @@ export const MonthPicker = ({
               style={{
                 alignItems: 'center',
                 padding: '3px 3px',
-                width: size === 'big' ? '35px' : '20px',
+                width: size === 'big' ? '42px' : '20px',
+                whiteSpace: 'nowrap',
                 textAlign: 'center',
                 userSelect: 'none',
                 cursor: 'default',
                 borderRadius: 2,
                 border: 'none',
+                marginRight: noGapAfter ? '0px' : '4px',
                 ...(!isMonthBudgeted && {
                   textDecoration: 'line-through',
                   color: theme.pageTextSubdued,

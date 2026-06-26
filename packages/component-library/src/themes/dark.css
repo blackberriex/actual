@@ -1,4 +1,7 @@
 :root {
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
   /* Page backgrounds */
   --color-pageBackground: #1f2023;
   --color-pageBackgroundModalActive: #191a1b;

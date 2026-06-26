@@ -131,6 +131,7 @@ function EditableBudgetName() {
           fontWeight: 500,
           marginLeft: -5,
           flex: '0 auto',
+          fontFamily: 'var(--font-family-display)',
         }}
         onPress={() => {
           resetPosition();
