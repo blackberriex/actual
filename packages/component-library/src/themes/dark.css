@@ -49,16 +49,16 @@
   --color-tableRowHeaderText: #ffffff;
 
   /* ===== Numbers ===== */
-  --color-numberPositive: #3ddc97;
-  --color-numberNegative: #f0616d;
+  --color-numberPositive: #a3de41;
+  --color-numberNegative: #e13f4d;
   --color-numberNeutral: #6e6e77;
   --color-budgetNumberNegative: var(--color-numberNegative);
   --color-budgetNumberZero: var(--color-tableTextSubdued);
   --color-budgetNumberNeutral: var(--color-tableText);
   --color-budgetNumberPositive: var(--color-numberPositive);
   --color-templateNumberFunded: var(--color-numberPositive);
-  --color-templateNumberUnderFunded: #e8c14a;
-  --color-toBudgetPositive: #3ddc97;
+  --color-templateNumberUnderFunded: #e13f4d;
+  --color-toBudgetPositive: #a3de41;
   --color-toBudgetZero: var(--color-numberNeutral);
   --color-toBudgetNegative: var(--color-budgetNumberNegative);
 
