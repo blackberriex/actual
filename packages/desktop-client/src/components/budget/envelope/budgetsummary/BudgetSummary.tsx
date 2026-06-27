@@ -88,15 +88,15 @@ export const BudgetSummary = memo(({ month }: BudgetSummaryProps) => {
       <SheetNameProvider name={monthUtils.sheetForMonth(month)}>
         <View
           style={{
-            padding: collapsed ? '12px 24px' : '24px 24px 24px 24px',
-            ...(collapsed ? { margin: '0' } : { marginTop: 4 }),
+            padding: collapsed ? '8px 16px' : '12px 16px',
+            ...(collapsed ? { margin: '0' } : { marginTop: 0 }),
           }}
         >
           <View
             style={{
               position: 'absolute',
               left: 14,
-              top: collapsed ? 8 : 16,
+              top: collapsed ? 4 : 8,
             }}
           >
             <Button
@@ -123,7 +123,7 @@ export const BudgetSummary = memo(({ month }: BudgetSummaryProps) => {
               {
                 textAlign: 'center',
                 marginTop: 0,
-                fontSize: 22,
+                fontSize: 16,
                 fontWeight: 500,
                 fontFamily: 'var(--font-family-display)',
                 letterSpacing: '-0.02em',
@@ -132,14 +132,14 @@ export const BudgetSummary = memo(({ month }: BudgetSummaryProps) => {
               currentMonth === month && { fontWeight: 600 },
             ])}
           >
-            {monthUtils.format(month, 'MMMM', locale)}
+            {monthUtils.format(month, 'LLLL', locale)}
           </div>
 
           <View
             style={{
               position: 'absolute',
               right: 10,
-              top: 0,
+              top: 2,
               flexDirection: 'row',
               alignItems: 'center',
             }}
@@ -270,14 +270,14 @@ export const BudgetSummary = memo(({ month }: BudgetSummaryProps) => {
               prevMonthName={prevMonthName}
               style={{
                 padding: '5px 0',
-                marginTop: 17,
+                marginTop: 10,
                 backgroundColor: theme.budgetHeaderCurrentMonth,
                 borderTopWidth: 1,
                 borderBottomWidth: 1,
                 borderColor: theme.tableBorder,
               }}
             />
-            <View style={{ margin: '23px 0' }}>
+            <View style={{ margin: '10px 0' }}>
               <ToBudget
                 prevMonthName={prevMonthName}
                 month={month}

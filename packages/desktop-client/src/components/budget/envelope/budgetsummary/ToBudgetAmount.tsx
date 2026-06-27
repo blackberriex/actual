@@ -123,7 +123,7 @@ export function ToBudgetAmount({
                 data-cellname={sheetName}
                 className={css([
                   {
-                    fontSize: 36,
+                    fontSize: 24,
                     fontWeight: 700,
                     letterSpacing: '-0.02em',
                     fontFamily: 'var(--font-family-display)',

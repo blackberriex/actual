@@ -84,15 +84,15 @@ export function BudgetSummary({ month }: BudgetSummaryProps) {
       <SheetNameProvider name={monthUtils.sheetForMonth(month)}>
         <View
           style={{
-            padding: collapsed ? '12px 24px' : '24px 24px 24px 24px',
-            ...(collapsed ? { margin: '0' } : { marginTop: 4 }),
+            padding: collapsed ? '8px 16px' : '12px 16px',
+            ...(collapsed ? { margin: '0' } : { marginTop: 0 }),
           }}
         >
           <View
             style={{
               position: 'absolute',
               left: 14,
-              top: collapsed ? 8 : 16,
+              top: collapsed ? 4 : 8,
             }}
           >
             <Button
@@ -119,7 +119,7 @@ export function BudgetSummary({ month }: BudgetSummaryProps) {
               {
                 textAlign: 'center',
                 marginTop: 0,
-                fontSize: 22,
+                fontSize: 16,
                 fontWeight: 500,
                 fontFamily: 'var(--font-family-display)',
                 letterSpacing: '-0.02em',
@@ -128,14 +128,14 @@ export function BudgetSummary({ month }: BudgetSummaryProps) {
               currentMonth === month && { fontWeight: 600 },
             ])}
           >
-            {monthUtils.format(month, 'MMMM', locale)}
+            {monthUtils.format(month, 'LLLL', locale)}
           </div>
 
           <View
             style={{
               position: 'absolute',
               right: 10,
-              top: 0,
+              top: 2,
               flexDirection: 'row',
               alignItems: 'center',
             }}
@@ -242,8 +242,8 @@ export function BudgetSummary({ month }: BudgetSummaryProps) {
               alignItems: 'flex-start',
               backgroundColor: theme.budgetHeaderCurrentMonth,
               borderRadius: 4,
-              padding: '10px 15px',
-              marginTop: 13,
+              padding: '6px 12px',
+              marginTop: 8,
             }}
           >
             <IncomeTotal />
@@ -266,7 +266,7 @@ export function BudgetSummary({ month }: BudgetSummaryProps) {
         ) : (
           <Saved
             projected={month >= currentMonth}
-            style={{ marginTop: 13, marginBottom: 20 }}
+            style={{ marginTop: 8, marginBottom: 12 }}
           />
         )}
       </SheetNameProvider>
