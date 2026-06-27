@@ -1,0 +1,24 @@
+# rules.yaml - Configuration for the Bank Statement Normalizer
+
+# Custom regex overrides for specific merchants
+rules:
+  - pattern: "EPIC GAMES"
+    payee: "Epic Games Store"
+    category: "Entertainment"
+  - pattern: "NETFLIX"
+    payee: "Netflix"
+    category: "Entertainment"
+  - pattern: "UBER"
+    payee: "Uber"
+    category: "Transport"
+  - pattern: "GLOVO"
+    payee: "Glovo"
+    category: "Food"
+
+# Translation lookup table for category names (English rules to database/Ukrainian values)
+category_translations:
+  "Entertainment": "Розваги"
+  "Food": "Продукти"
+  "Transport": "Транспорт"
+  "Travel": "Подорожі"
+  "Utilities": "Комунальні послуги"
