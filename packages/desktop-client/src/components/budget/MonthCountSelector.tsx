@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { SvgCalendar } from '@actual-app/components/icons/v2';
+import { SvgCalendar3 } from '@actual-app/components/icons/v2';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 
@@ -14,8 +14,19 @@ type CalendarProps = {
 
 function Calendar({ color, onClick }: CalendarProps) {
   return (
-    <SvgCalendar
-      style={{ width: 13, height: 13, color, marginRight: 5 }}
+    <SvgCalendar3
+      style={{
+        width: 14,
+        height: 14,
+        color,
+        marginRight: 6,
+        cursor: 'pointer',
+        transition: 'color 150ms ease, transform 100ms ease',
+        ':hover': {
+          color: theme.pageText,
+          transform: 'scale(1.1)',
+        },
+      }}
       onClick={onClick}
     />
   );

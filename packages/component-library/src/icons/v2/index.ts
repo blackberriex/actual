@@ -50,3 +50,5 @@ export { SvgUploadThickBottom } from './UploadThickBottom';
 export { SvgValidationCheck } from './ValidationCheck';
 export { SvgViewHide } from './ViewHide';
 export { SvgViewShow } from './ViewShow';
+export { SvgServer } from './Server';
+

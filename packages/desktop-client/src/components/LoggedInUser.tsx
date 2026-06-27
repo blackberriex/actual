@@ -4,6 +4,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
 
 import { Button } from '@actual-app/components/button';
+import { SvgServer } from '@actual-app/components/icons/v2';
 import { Menu } from '@actual-app/components/menu';
 import { Popover } from '@actual-app/components/popover';
 import { styles } from '@actual-app/components/styles';
@@ -217,7 +218,18 @@ export function LoggedInUser({ hideIfNoServer, style }: LoggedInUserProps) {
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', ...style }}>
-      <Button ref={triggerRef} variant="bare" onPress={() => setMenuOpen(true)}>
+      <Button
+        ref={triggerRef}
+        variant="bare"
+        onPress={() => setMenuOpen(true)}
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+        }}
+      >
+        <SvgServer width={13} height={13} style={{ opacity: 0.8 }} />
         {serverMessage()}
       </Button>
       {!loading &&

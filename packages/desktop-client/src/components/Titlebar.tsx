@@ -56,10 +56,33 @@ function UncategorizedButton() {
       buttonVariant="bare"
       to="/categories/uncategorized"
       style={{
-        color: theme.errorText,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        backgroundColor: 'rgba(232, 154, 37, 0.08)',
+        border: '1px solid rgba(232, 154, 37, 0.18)',
+        borderRadius: 999,
+        padding: '3px 10px',
+        color: '#e89a25',
+        fontSize: 12,
+        fontWeight: 600,
+        transition: 'all 150ms ease',
+        cursor: 'pointer',
+        ':hover': {
+          backgroundColor: 'rgba(232, 154, 37, 0.14)',
+          borderColor: 'rgba(232, 154, 37, 0.3)',
+          transform: 'translateY(-0.5px)',
+        },
+        ':active': {
+          transform: 'scale(0.97)',
+        },
       }}
     >
-      <Trans count={count}>{{ count }} uncategorized transactions</Trans>
+      <SvgAlertTriangle width={12} height={12} style={{ color: '#e89a25' }} />
+      <Text style={{ fontSize: 12, fontWeight: 600, color: 'inherit' }}>
+        <Trans count={count}>{{ count }} uncategorized transactions</Trans>
+      </Text>
     </Link>
   );
 }
