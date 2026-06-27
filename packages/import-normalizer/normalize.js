@@ -26,8 +26,25 @@ function parseArgs() {
 
 // Helper to detect CSV headers and parse rows
 function parseCSV(filePath) {
-  const fileContent = fs.readFileSync(filePath, 'utf-8');
+  let fileContent = fs.readFileSync(filePath, 'utf-8');
   
+  // Skip metadata headers if present (common in bank statements)
+  const lines = fileContent.split(/\r?\n/);
+  let headerLineIndex = -1;
+  const searchPatterns = [/дата/i, /date/i, /опис/i, /description/i];
+  
+  for (let i = 0; i < lines.length; i++) {
+    if (searchPatterns.some(p => p.test(lines[i]))) {
+      headerLineIndex = i;
+      break;
+    }
+  }
+  
+  if (headerLineIndex > 0) {
+    console.log(`[CSV] Skipped ${headerLineIndex} metadata header lines.`);
+    fileContent = lines.slice(headerLineIndex).join('\n');
+  }
+
   // Parse with csv-parse
   const records = parse(fileContent, {
     columns: true,
@@ -47,11 +64,13 @@ function parseCSV(filePath) {
     date: null,
     amount: null,
     payee: null,
+    card: null,
   };
 
   const datePatterns = [/date/i, /дата/i, /time/i, /час/i];
   const amountPatterns = [/amount/i, /сума/i, /value/i, /сума \(грн\.\)/i, /card amount/i];
   const payeePatterns = [/description/i, /опис/i, /payee/i, /опис операції/i, /raw payee/i, /контрагент/i];
+  const cardPatterns = [/картка/i, /card/i, /номер/i];
 
   // Detect Date
   columnMap.date = keys.find(k => datePatterns.some(p => p.test(k)));
@@ -59,13 +78,15 @@ function parseCSV(filePath) {
   columnMap.amount = keys.find(k => amountPatterns.some(p => p.test(k)));
   // Detect Payee/Description
   columnMap.payee = keys.find(k => payeePatterns.some(p => p.test(k)));
+  // Detect Card
+  columnMap.card = keys.find(k => cardPatterns.some(p => p.test(k)));
 
   if (!columnMap.date || !columnMap.amount || !columnMap.payee) {
     console.error('Available keys:', keys);
     throw new Error(`Failed to auto-detect columns. Detected: Date(${columnMap.date}), Amount(${columnMap.amount}), Payee(${columnMap.payee})`);
   }
 
-  console.log(`[Auto-detect] Mapped CSV headers: Date -> "${columnMap.date}", Amount -> "${columnMap.amount}", Description -> "${columnMap.payee}"`);
+  console.log(`[Auto-detect] Mapped CSV headers: Date -> "${columnMap.date}", Amount -> "${columnMap.amount}", Description -> "${columnMap.payee}"${columnMap.card ? `, Card -> "${columnMap.card}"` : ''}`);
 
   return records.map(row => {
     let rawAmount = row[columnMap.amount];
@@ -79,6 +100,7 @@ function parseCSV(filePath) {
       date: row[columnMap.date],
       amount: amountFloat,
       rawDescription: row[columnMap.payee],
+      card: columnMap.card ? row[columnMap.card] : '',
     };
   });
 }
@@ -223,37 +245,74 @@ async function main() {
     let finalPayeeId = null;
     let mappingSource = 'Cleaned Raw';
 
-    // 1. Check Learning Loop first (if online history is loaded)
-    if (learnedMappings.has(rawDesc.trim())) {
-      const learned = learnedMappings.get(rawDesc.trim());
-      finalPayeeName = learned.payeeName;
-      finalCategoryName = learned.categoryName;
-      finalCategoryId = learned.categoryId;
-      finalPayeeId = learned.payeeId;
-      mappingSource = 'Learned';
-    } 
-    // 2. Check rules.yaml configuration
-    else {
-      const matchingRule = config.rules.find(r => {
-        const regex = new RegExp(r.pattern, 'i');
-        return regex.test(rawDesc) || regex.test(cleanedPayee);
-      });
+    // Extract card last 4 digits
+    const cardMatch = tx.card.match(/(\d{4})$/);
+    const cardDigits = cardMatch ? cardMatch[1] : '';
+    const resolvedAccount = (cardDigits && config.cards && config.cards[cardDigits]) 
+      ? config.cards[cardDigits] 
+      : (accountName || 'Privat UAH');
 
-      if (matchingRule) {
-        finalPayeeName = matchingRule.payee;
-        finalCategoryName = matchingRule.category;
-        mappingSource = 'rules.yaml';
+    // 0. Detect transfers between own accounts
+    let isTransfer = false;
+    let transferAccount = '';
+    if (config.transfer_rules) {
+      for (const rule of config.transfer_rules) {
+        const regex = new RegExp(rule.pattern, 'i');
+        const match = rawDesc.match(regex);
+        if (match) {
+          const targetCardDigits = match[1];
+          const destAccount = (config.cards && config.cards[targetCardDigits]) ? config.cards[targetCardDigits] : null;
+          if (destAccount) {
+            isTransfer = true;
+            transferAccount = destAccount;
+            finalPayeeName = `Transfer: ${destAccount}`;
+            mappingSource = 'Transfer Rule';
+            break;
+          }
+        }
+      }
+    }
 
-        // Translate category if needed (Ukrainian/English matching support)
-        if (config.category_translations[finalCategoryName]) {
-          const translated = config.category_translations[finalCategoryName];
-          finalCategoryName = translated;
+    if (!isTransfer) {
+      // 1. Check Learning Loop (Exact matching based on history)
+      if (learnedMappings.has(rawDesc.trim())) {
+        const learned = learnedMappings.get(rawDesc.trim());
+        finalPayeeName = learned.payeeName;
+        finalCategoryName = learned.categoryName;
+        finalCategoryId = learned.categoryId;
+        finalPayeeId = learned.payeeId;
+        mappingSource = 'Learned';
+      } 
+      // 2. Check rules.yaml configuration
+      else {
+        const matchingRule = config.rules.find(r => {
+          const regex = new RegExp(r.pattern, 'i');
+          return regex.test(rawDesc) || regex.test(cleanedPayee);
+        });
+
+        if (matchingRule) {
+          finalPayeeName = matchingRule.payee;
+          finalCategoryName = matchingRule.category;
+          mappingSource = 'rules.yaml';
+
+          // Translate category if needed (Ukrainian/English matching support)
+          if (config.category_translations[finalCategoryName]) {
+            const translated = config.category_translations[finalCategoryName];
+            finalCategoryName = translated;
+          }
         }
       }
     }
 
     // Resolve category/payee IDs if online
     if (!isOffline) {
+      if (isTransfer && transferAccount) {
+        const destAccountObj = accounts.find(a => a.name === transferAccount || a.id === transferAccount);
+        if (destAccountObj) {
+          finalPayeeId = `transfer:${destAccountObj.id}`;
+        }
+      }
+
       if (finalCategoryName && !finalCategoryId) {
         const matchedCat = categories.find(c => c.name.toLowerCase() === finalCategoryName.toLowerCase());
         if (matchedCat) finalCategoryId = matchedCat.id;
@@ -266,15 +325,26 @@ async function main() {
 
     // Formatting date (YYYY-MM-DD)
     let isoDate = tx.date;
-    if (/\d{2}\.\d{2}\.\d{4}/.test(tx.date)) {
-      const [d, m, y] = tx.date.split('.');
+    const dateOnly = tx.date.split(' ')[0];
+    if (/\d{2}\.\d{2}\.\d{4}/.test(dateOnly)) {
+      const [d, m, y] = dateOnly.split('.');
       isoDate = `${y}-${m}-${d}`;
     }
 
     // Cent amount for Actual API
     const amountInCents = Math.round(tx.amount * 100);
 
+    // If online, use resolved targetAccount to import into
+    let finalAccountId = account ? account.id : null;
+    if (!isOffline && accountName) {
+      const routedAccount = accounts.find(a => a.name === resolvedAccount || a.id === resolvedAccount);
+      if (routedAccount) {
+        finalAccountId = routedAccount.id;
+      }
+    }
+
     normalizedToImport.push({
+      account: finalAccountId, // We route to correct account ID
       date: isoDate,
       amount: amountInCents,
       payee: finalPayeeId,
@@ -287,6 +357,7 @@ async function main() {
 
     // Save output row for Offline CSV
     csvOutputRows.push({
+      account: resolvedAccount,
       date: isoDate,
       payee: finalPayeeName,
       category: finalCategoryName,
@@ -322,8 +393,8 @@ async function main() {
   // Handle Normalized CSV output file
   if (args.out) {
     const normalizedCsvFile = path.resolve(args.out);
-    const csvHeader = 'Date,Payee,Category,Amount,Notes\n';
-    const csvRows = csvOutputRows.map(x => `"${x.date}","${x.payee.replace(/"/g, '""')}","${x.category.replace(/"/g, '""')}","${x.amount.toFixed(2)}","${x.notes.replace(/"/g, '""')}"`).join('\n');
+    const csvHeader = 'Account,Date,Payee,Category,Amount,Notes\n';
+    const csvRows = csvOutputRows.map(x => `"${x.account}","${x.date}","${x.payee.replace(/"/g, '""')}","${x.category.replace(/"/g, '""')}","${x.amount.toFixed(2)}","${x.notes.replace(/"/g, '""')}"`).join('\n');
     fs.writeFileSync(normalizedCsvFile, csvHeader + csvRows, 'utf-8');
     console.log(`[Output] Successfully wrote normalized CSV file to: ${normalizedCsvFile}`);
   }

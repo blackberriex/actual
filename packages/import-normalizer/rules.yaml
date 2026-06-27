@@ -1,5 +1,18 @@
 # rules.yaml - Configuration for the Bank Statement Normalizer
 
+# Mapping of card last 4 digits to Actual account names
+cards:
+  "7100": "Privat USD"
+  "9366": "Privat UAH"
+  "7833": "Privat UAH"
+
+# Patterns to identify transfer transactions between your own accounts
+transfer_rules:
+  - pattern: "Зі своєї картки \\*(\\d{4})"
+    direction: "from"
+  - pattern: "На свою картку \\*(\\d{4})"
+    direction: "to"
+
 # Custom regex overrides for specific merchants
 rules:
   - pattern: "EPIC GAMES"
