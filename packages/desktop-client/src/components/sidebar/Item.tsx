@@ -44,6 +44,7 @@ export function Item({
 }: ItemProps) {
   const hoverStyle = {
     backgroundColor: theme.sidebarItemBackgroundHover,
+    color: theme.sidebarItemTextHighlight,
   };
 
   const content = (
@@ -92,8 +93,12 @@ export function Item({
         }}
         forceActive={forceActive}
         activeStyle={{
-          backgroundColor: theme.sidebarItemBackgroundHover,
+          backgroundColor: theme.sidebarItemAccentSelected,
           color: theme.sidebarItemTextSelected,
+          ':hover': {
+            backgroundColor: theme.sidebarItemAccentSelected,
+            color: theme.sidebarItemTextSelected,
+          },
         }}
         to={to}
         onClick={onClick}

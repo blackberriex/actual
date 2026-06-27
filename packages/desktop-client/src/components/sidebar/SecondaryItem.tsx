@@ -75,14 +75,21 @@ export function SecondaryItem({
           margin: '2px 8px',
           borderRadius: 6,
           fontWeight: bold ? fontWeight : null,
-          ':hover': { backgroundColor: theme.sidebarItemBackgroundHover },
+          ':hover': {
+            backgroundColor: theme.sidebarItemBackgroundHover,
+            color: theme.sidebarItemTextHighlight,
+          },
         }}
         to={to}
         onClick={onClick}
         activeStyle={{
-          backgroundColor: theme.sidebarItemBackgroundHover,
+          backgroundColor: theme.sidebarItemAccentSelected,
           color: theme.sidebarItemTextSelected,
           fontWeight: bold ? fontWeight : null,
+          ':hover': {
+            backgroundColor: theme.sidebarItemAccentSelected,
+            color: theme.sidebarItemTextSelected,
+          },
         }}
       >
         {content}

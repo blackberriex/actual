@@ -2,272 +2,271 @@
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-family-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Page backgrounds */
-  --color-pageBackground: #191a1b;
-  --color-pageBackgroundModalActive: #191a1b;
-  --color-pageBackgroundTopLeft: #191a1b;
-  --color-pageBackgroundBottomRight: #191a1b;
-  --color-pageBackgroundLineTop: #2d2f34;
-  --color-pageBackgroundLineMid: #2d2f34;
-  --color-pageBackgroundLineBottom: #2d2f34;
-  
-  /* Text */
-  --color-pageText: #e3e8ed; /* clean off-white */
-  --color-pageTextLight: #98a1ae; /* muted gray */
-  --color-pageTextSubdued: #747c8b; /* dark gray */
-  --color-pageTextDark: #ffffff; /* pure white */
-  --color-pageTextPositive: #ffffff; /* general positive text is white */
+  /* ===== Page ===== */
+  --color-pageBackground: #161617;
+  --color-pageBackgroundModalActive: #161617;
+  --color-pageBackgroundTopLeft: #161617;
+  --color-pageBackgroundBottomRight: #161617;
+  --color-pageBackgroundLineTop: #2c2c30;
+  --color-pageBackgroundLineMid: #2c2c30;
+  --color-pageBackgroundLineBottom: #2c2c30;
+  --color-pageText: #e6e6ea;
+  --color-pageTextLight: #9a9aa3;
+  --color-pageTextSubdued: #6e6e77;
+  --color-pageTextDark: #f4f4f6;
+  --color-pageTextPositive: #ffffff;
   --color-pageTextLink: #ffffff;
-  --color-pageTextLinkLight: #e3e8ed;
+  --color-pageTextLinkLight: #e6e6ea;
 
-  /* Cards */
-  --color-cardBackground: #1d1d20;
-  --color-cardBorder: #2d2f34;
-  --color-cardShadow: rgba(0, 0, 0, 0.2);
+  /* ===== Card ===== */
+  --color-cardBackground: #1c1c1e;
+  --color-cardBorder: #2c2c30;
+  --color-cardShadow: rgba(0, 0, 0, 0.24);
 
-  /* Tables */
-  --color-tableBackground: #1d1d20;
-  --color-tableRowBackgroundAlternate: #1d1d20;
-  --color-tableRowBackgroundHover: #26272b;
-  --color-tableText: #e3e8ed;
-  --color-tableTextItemAdded: #e3e8ed;
-  --color-tableTextLight: #e3e8ed;
-  --color-tableTextSubdued: #747c8b;
+  /* ===== Table ===== */
+  --color-tableBackground: #1c1c1e;
+  --color-tableRowBackgroundAlternate: #1c1c1e;
+  --color-tableRowBackgroundHover: #26262a;
+  --color-tableText: #e6e6ea;
+  --color-tableTextItemAdded: #e6e6ea;
+  --color-tableTextLight: #e6e6ea;
+  --color-tableTextSubdued: #6e6e77;
   --color-tableTextSelected: #ffffff;
   --color-tableTextHover: #ffffff;
-  --color-tableTextInactive: #747c8b;
-  --color-tableHeaderText: #98a1ae;
-  --color-tableHeaderBackground: #26272b;
-  --color-tableBorder: #2d2f34;
+  --color-tableTextInactive: #6e6e77;
+  --color-tableHeaderText: #9a9aa3;
+  --color-tableHeaderBackground: #212123;
+  --color-tableBorder: #2c2c30;
   --color-tableBorderSelected: #ffffff;
-  --color-tableBorderHover: #747c8b;
-  --color-tableBorderSeparator: #2d2f34;
-  --color-tableRowBackgroundHighlight: #26272b;
+  --color-tableBorderHover: #5a5a63;
+  --color-tableBorderSeparator: #2c2c30;
+  --color-tableRowBackgroundHighlight: #26262a;
   --color-tableRowBackgroundHighlightText: #ffffff;
-  --color-tableRowHeaderBackground: #26272b;
+  --color-tableRowHeaderBackground: #212123;
   --color-tableRowHeaderText: #ffffff;
 
-  /* Numbers (Data metrics - colors retained) */
-  --color-numberPositive: #3ebd93; /* green */
-  --color-numberNegative: #ef4e4e; /* red */
-  --color-numberNeutral: #747c8b;
+  /* ===== Numbers ===== */
+  --color-numberPositive: #3ddc97;
+  --color-numberNegative: #f0616d;
+  --color-numberNeutral: #6e6e77;
   --color-budgetNumberNegative: var(--color-numberNegative);
   --color-budgetNumberZero: var(--color-tableTextSubdued);
   --color-budgetNumberNeutral: var(--color-tableText);
   --color-budgetNumberPositive: var(--color-numberPositive);
   --color-templateNumberFunded: var(--color-numberPositive);
-  --color-templateNumberUnderFunded: #e6bb20; /* yellow/orange */
-  --color-toBudgetPositive: var(--color-numberPositive);
+  --color-templateNumberUnderFunded: #e8c14a;
+  --color-toBudgetPositive: #3ddc97;
   --color-toBudgetZero: var(--color-numberNeutral);
   --color-toBudgetNegative: var(--color-budgetNumberNegative);
 
-  /* Sidebar */
-  --color-sidebarBackground: #191a1b;
-  --color-sidebarItemBackgroundPending: #e6bb20;
-  --color-sidebarItemBackgroundPositive: #3ebd93;
-  --color-sidebarItemBackgroundFailed: #ef4e4e;
+  /* ===== Sidebar ===== */
+  --color-sidebarBackground: #161617;
+  --color-sidebarItemBackgroundPending: #e8c14a;
+  --color-sidebarItemBackgroundPositive: #3ddc97;
+  --color-sidebarItemBackgroundFailed: #f0616d;
   --color-sidebarItemAccentSelected: #ffffff;
-  --color-sidebarItemBackgroundHover: #26272b;
-  --color-sidebarItemText: #98a1ae;
-  --color-sidebarItemTextHighlight: #efefef;
+  --color-sidebarItemBackgroundHover: #26262a;
+  --color-sidebarItemBackgroundSelected: #ffffff;
+  --color-sidebarItemText: #9a9aa3;
+  --color-sidebarItemTextHighlight: #f4f4f6;
   --color-sidebarItemTextUpdated: #ffffff;
-  --color-sidebarItemTextSelected: #ffffff;
+  --color-sidebarItemTextSelected: #161617;
   --color-sidebarBudgetName: #ffffff;
 
-  /* Menus */
-  --color-menuBackground: #191a1b;
-  --color-menuItemBackground: #191a1b;
-  --color-menuItemBackgroundHover: #26272b;
-  --color-menuItemText: #e3e8ed;
+  /* ===== Menu ===== */
+  --color-menuBackground: #19191b;
+  --color-menuItemBackground: #19191b;
+  --color-menuItemBackgroundHover: #26262a;
+  --color-menuItemText: #e6e6ea;
   --color-menuItemTextHover: #ffffff;
   --color-menuItemTextSelected: #ffffff;
-  --color-menuItemTextHeader: #98a1ae;
-  --color-menuBorder: #2d2f34;
+  --color-menuItemTextHeader: #9a9aa3;
+  --color-menuBorder: #2c2c30;
   --color-menuBorderHover: #ffffff;
-  --color-menuKeybindingText: #747c8b;
-  --color-menuAutoCompleteBackground: #191a1b;
-  --color-menuAutoCompleteBackgroundHover: #26272b;
-  --color-menuAutoCompleteText: #e3e8ed;
-  --color-menuAutoCompleteTextHeader: #98a1ae;
+  --color-menuKeybindingText: #6e6e77;
+  --color-menuAutoCompleteBackground: #19191b;
+  --color-menuAutoCompleteBackgroundHover: #26262a;
+  --color-menuAutoCompleteText: #e6e6ea;
+  --color-menuAutoCompleteTextHeader: #9a9aa3;
   --color-menuAutoCompleteItemText: var(--color-menuItemText);
 
-  /* Modals */
-  --color-modalBackground: #1d1d20;
-  --color-modalBorder: #2d2f34;
-  
-  /* Mobile specific style options */
-  --color-mobileHeaderBackground: #191a1b;
+  /* ===== Modal ===== */
+  --color-modalBackground: #1c1c1e;
+  --color-modalBorder: #2c2c30;
+
+  /* ===== Mobile ===== */
+  --color-mobileHeaderBackground: #19191b;
   --color-mobileHeaderText: #ffffff;
-  --color-mobileHeaderTextSubdued: #747c8b;
+  --color-mobileHeaderTextSubdued: #6e6e77;
   --color-mobileHeaderTextHover: rgba(255, 255, 255, 0.1);
-  --color-mobilePageBackground: #1f2023;
-  --color-mobileNavBackground: #191a1b;
-  --color-mobileNavItem: #747c8b;
+  --color-mobilePageBackground: #161617;
+  --color-mobileNavBackground: #19191b;
+  --color-mobileNavItem: #6e6e77;
   --color-mobileNavItemSelected: #ffffff;
-  --color-mobileAccountShadow: rgba(0, 0, 0, 0.3);
-  --color-mobileAccountText: #e3e8ed;
-  --color-mobileTransactionSelected: #26272b;
-
+  --color-mobileAccountShadow: rgba(0, 0, 0, 0.35);
+  --color-mobileAccountText: #e6e6ea;
+  --color-mobileTransactionSelected: #26262a;
   --color-mobileViewTheme: var(--color-mobileHeaderBackground);
-  --color-mobileConfigServerViewTheme: #191a1b;
+  --color-mobileConfigServerViewTheme: #19191b;
 
-  /* Markdown */
-  --color-markdownNormal: #e3e8ed;
-  --color-markdownDark: #98a1ae;
+  /* ===== Markdown ===== */
+  --color-markdownNormal: #e6e6ea;
+  --color-markdownDark: #9a9aa3;
   --color-markdownLight: #ffffff;
 
-  /* Buttons */
-  --color-buttonMenuText: #98a1ae;
+  /* ===== Buttons: Menu ===== */
+  --color-buttonMenuText: #9a9aa3;
   --color-buttonMenuTextHover: #ffffff;
   --color-buttonMenuBackground: transparent;
-  --color-buttonMenuBackgroundHover: #26272b;
-  --color-buttonMenuBorder: #2d2f34;
-  --color-buttonMenuSelectedText: #000000;
-  --color-buttonMenuSelectedTextHover: #000000;
+  --color-buttonMenuBackgroundHover: #26262a;
+  --color-buttonMenuBorder: #2c2c30;
+  --color-buttonMenuSelectedText: #161617;
+  --color-buttonMenuSelectedTextHover: #161617;
   --color-buttonMenuSelectedBackground: #ffffff;
-  --color-buttonMenuSelectedBackgroundHover: #e5e5e5;
+  --color-buttonMenuSelectedBackgroundHover: #e6e6ea;
   --color-buttonMenuSelectedBorder: #ffffff;
 
-  /* Primary Button (White fill, black text) */
-  --color-buttonPrimaryText: #000000;
-  --color-buttonPrimaryTextHover: #000000;
+  /* ===== Buttons: Primary ===== */
+  --color-buttonPrimaryText: #161617;
+  --color-buttonPrimaryTextHover: #161617;
   --color-buttonPrimaryBackground: #ffffff;
-  --color-buttonPrimaryBackgroundHover: #e5e5e5;
+  --color-buttonPrimaryBackgroundHover: #e6e6ea;
   --color-buttonPrimaryBorder: #ffffff;
-  --color-buttonPrimaryShadow: rgba(0, 0, 0, 0.3);
-  --color-buttonPrimaryDisabledText: #747c8b;
-  --color-buttonPrimaryDisabledBackground: #26272b;
-  --color-buttonPrimaryDisabledBorder: #2d2f34;
+  --color-buttonPrimaryShadow: rgba(0, 0, 0, 0.35);
+  --color-buttonPrimaryDisabledText: #6e6e77;
+  --color-buttonPrimaryDisabledBackground: #26262a;
+  --color-buttonPrimaryDisabledBorder: #2c2c30;
 
-  /* Normal Button */
-  --color-buttonNormalText: #e3e8ed;
+  /* ===== Buttons: Normal ===== */
+  --color-buttonNormalText: #e6e6ea;
   --color-buttonNormalTextHover: #ffffff;
-  --color-buttonNormalBackground: #26272b;
-  --color-buttonNormalBackgroundHover: #2e3035;
-  --color-buttonNormalBorder: #2d2f34;
-  --color-buttonNormalShadow: rgba(0, 0, 0, 0.2);
-  --color-buttonNormalSelectedText: #000000;
+  --color-buttonNormalBackground: #26262a;
+  --color-buttonNormalBackgroundHover: #2c2c30;
+  --color-buttonNormalBorder: #2c2c30;
+  --color-buttonNormalShadow: rgba(0, 0, 0, 0.24);
+  --color-buttonNormalSelectedText: #161617;
   --color-buttonNormalSelectedBackground: #ffffff;
-  --color-buttonNormalDisabledText: #747c8b;
-  --color-buttonNormalDisabledBackground: #1d1d20;
-  --color-buttonNormalDisabledBorder: #2d2f34;
+  --color-buttonNormalDisabledText: #6e6e77;
+  --color-buttonNormalDisabledBackground: #1c1c1e;
+  --color-buttonNormalDisabledBorder: #2c2c30;
 
-  /* Calendar */
+  /* ===== Calendar ===== */
   --color-calendarText: #ffffff;
-  --color-calendarBackground: #191a1b;
-  --color-calendarItemText: #e3e8ed;
-  --color-calendarItemBackground: #26272b;
+  --color-calendarBackground: #19191b;
+  --color-calendarItemText: #e6e6ea;
+  --color-calendarItemBackground: #26262a;
   --color-calendarSelectedBackground: #ffffff;
 
-  /* Bare Button */
-  --color-buttonBareText: #e3e8ed;
+  /* ===== Buttons: Bare ===== */
+  --color-buttonBareText: #e6e6ea;
   --color-buttonBareTextHover: #ffffff;
-  --color-buttonBareDisabledText: #747c8b;
+  --color-buttonBareDisabledText: #6e6e77;
   --color-buttonBareBackground: transparent;
   --color-buttonBareDisabledBackground: transparent;
   --color-buttonBareBackgroundHover: rgba(255, 255, 255, 0.05);
   --color-buttonBareBackgroundActive: rgba(255, 255, 255, 0.1);
 
-  /* Status Notices */
-  --color-noticeBackground: rgba(62, 189, 147, 0.1);
-  --color-noticeBackgroundLight: rgba(62, 189, 147, 0.05);
-  --color-noticeBackgroundDark: rgba(62, 189, 147, 0.2);
-  --color-noticeText: #3ebd93;
-  --color-noticeTextLight: #3ebd93;
-  --color-noticeTextDark: #3ebd93;
-  --color-noticeTextMenu: #3ebd93;
-  --color-noticeBorder: #3ebd93;
-  
-  --color-warningBackground: rgba(230, 187, 32, 0.1);
-  --color-warningText: #e6bb20;
-  --color-warningTextLight: #e6bb20;
-  --color-warningTextDark: #e6bb20;
-  --color-warningBorder: #e6bb20;
-  
-  --color-errorBackground: rgba(239, 78, 78, 0.1);
-  --color-errorText: #ef4e4e;
-  --color-errorTextDark: #ef4e4e;
-  --color-errorTextDarker: #ef4e4e;
-  --color-errorTextMenu: #ef4e4e;
-  --color-errorBorder: #ef4e4e;
-  
-  --color-upcomingBackground: #26272b;
-  --color-upcomingText: #e3e8ed;
-  --color-upcomingBorder: #2d2f34;
+  /* ===== Notice / Warning / Error ===== */
+  --color-noticeBackground: rgba(61, 220, 151, 0.1);
+  --color-noticeBackgroundLight: rgba(61, 220, 151, 0.05);
+  --color-noticeBackgroundDark: rgba(61, 220, 151, 0.2);
+  --color-noticeText: #3ddc97;
+  --color-noticeTextLight: #3ddc97;
+  --color-noticeTextDark: #3ddc97;
+  --color-noticeTextMenu: #3ddc97;
+  --color-noticeBorder: #3ddc97;
 
-  /* Form controls */
-  --color-formLabelText: #98a1ae;
-  --color-formLabelBackground: #191a1b;
-  --color-formInputBackground: #1d1d20;
-  --color-formInputBackgroundSelected: #26272b;
-  --color-formInputBackgroundSelection: #2d2f34;
-  --color-formInputBorder: #2d2f34;
-  --color-formInputTextReadOnlySelection: #26272b;
-  --color-formInputBorderSelected: #747c8b;
-  --color-formInputText: #e3e8ed;
+  --color-warningBackground: rgba(232, 193, 74, 0.1);
+  --color-warningText: #e8c14a;
+  --color-warningTextLight: #e8c14a;
+  --color-warningTextDark: #e8c14a;
+  --color-warningBorder: #e8c14a;
+
+  --color-errorBackground: rgba(240, 97, 109, 0.1);
+  --color-errorText: #f0616d;
+  --color-errorTextDark: #f0616d;
+  --color-errorTextDarker: #f0616d;
+  --color-errorTextMenu: #f0616d;
+  --color-errorBorder: #f0616d;
+
+  /* ===== Upcoming ===== */
+  --color-upcomingBackground: #26262a;
+  --color-upcomingText: #e6e6ea;
+  --color-upcomingBorder: #2c2c30;
+
+  /* ===== Forms ===== */
+  --color-formLabelText: #9a9aa3;
+  --color-formLabelBackground: #19191b;
+  --color-formInputBackground: #1c1c1e;
+  --color-formInputBackgroundSelected: #26262a;
+  --color-formInputBackgroundSelection: #2c2c30;
+  --color-formInputBorder: #2c2c30;
+  --color-formInputTextReadOnlySelection: #26262a;
+  --color-formInputBorderSelected: #5a5a63;
+  --color-formInputText: #e6e6ea;
   --color-formInputTextSelected: #ffffff;
-  --color-formInputTextPlaceholder: #747c8b;
-  --color-formInputTextPlaceholderSelected: #98a1ae;
-  --color-formInputTextSelection: #e3e8ed;
-  --color-formInputShadowSelected: rgba(255, 255, 255, 0.1);
+  --color-formInputTextPlaceholder: #6e6e77;
+  --color-formInputTextPlaceholderSelected: #9a9aa3;
+  --color-formInputTextSelection: #e6e6ea;
+  --color-formInputShadowSelected: rgba(255, 255, 255, 0.12);
   --color-formInputTextHighlight: #ffffff;
-  
-  --color-checkboxText: #e3e8ed;
+
+  /* ===== Checkbox ===== */
+  --color-checkboxText: #e6e6ea;
   --color-checkboxBackgroundSelected: #ffffff;
   --color-checkboxBorderSelected: #ffffff;
   --color-checkboxShadowSelected: transparent;
-  --color-checkboxToggleBackground: #26272b;
+  --color-checkboxToggleBackground: #26262a;
   --color-checkboxToggleBackgroundSelected: #ffffff;
-  --color-checkboxToggleDisabled: #1d1d20;
+  --color-checkboxToggleDisabled: #1c1c1e;
 
-  /* Pills & Tags */
-  --color-pillBackground: #26272b;
-  --color-pillBackgroundLight: #1d1d20;
-  --color-pillText: #e3e8ed;
+  /* ===== Pills ===== */
+  --color-pillBackground: #26262a;
+  --color-pillBackgroundLight: #1c1c1e;
+  --color-pillText: #e6e6ea;
   --color-pillTextHighlighted: #ffffff;
-  --color-pillBorder: #2d2f34;
-  --color-pillBorderDark: #2d2f34;
+  --color-pillBorder: #2c2c30;
+  --color-pillBorderDark: #2c2c30;
   --color-pillBackgroundSelected: #ffffff;
-  --color-pillTextSelected: #000000;
+  --color-pillTextSelected: #161617;
   --color-pillBorderSelected: #ffffff;
-  --color-pillTextSubdued: #747c8b;
+  --color-pillTextSubdued: #6e6e77;
 
-  /* Reports */
-  --color-reportsRed: #ef4e4e;
-  --color-reportsBlue: #98a1ae;
-  --color-reportsGreen: #3ebd93;
-  --color-reportsGray: #747c8b;
-  --color-reportsLabel: #e3e8ed;
-  --color-reportsInnerLabel: #1d1d20;
-  --color-reportsNumberPositive: #589b4f;
-  --color-reportsNumberNegative: #eb4949;
+  /* ===== Reports / Charts ===== */
+  --color-reportsRed: #f0616d;
+  --color-reportsBlue: #9a9aa3;
+  --color-reportsGreen: #3ddc97;
+  --color-reportsGray: #6e6e77;
+  --color-reportsLabel: #e6e6ea;
+  --color-reportsInnerLabel: #1c1c1e;
+  --color-reportsNumberPositive: #3ddc97;
+  --color-reportsNumberNegative: #f0616d;
   --color-reportsNumberNeutral: var(--color-numberNeutral);
   --color-reportsChartFill: var(--color-reportsNumberPositive);
 
-  /* Note Tags */
-  --color-noteTagBackground: #26272b;
-  --color-noteTagBackgroundHover: #2e3035;
-  --color-noteTagDefault: #26272b;
-  --color-noteTagText: #e3e8ed;
+  /* ===== Notes / Tags ===== */
+  --color-noteTagBackground: #26262a;
+  --color-noteTagBackgroundHover: #2c2c30;
+  --color-noteTagDefault: #26262a;
+  --color-noteTagText: #e6e6ea;
 
-  /* Budget specifics */
-  --color-budgetOtherMonth: #1f2023;
-  --color-budgetCurrentMonth: #1d1d20;
-  --color-budgetHeaderOtherMonth: #1f2023;
-  --color-budgetHeaderCurrentMonth: #26272b;
+  /* ===== Budget ===== */
+  --color-budgetOtherMonth: #161617;
+  --color-budgetCurrentMonth: #1c1c1e;
+  --color-budgetHeaderOtherMonth: #161617;
+  --color-budgetHeaderCurrentMonth: #212123;
 
-  /* Floating elements */
-  --color-floatingActionBarBackground: #26272b;
-  --color-floatingActionBarBorder: #2d2f34;
+  /* ===== Floating action bar / Tooltip ===== */
+  --color-floatingActionBarBackground: #26262a;
+  --color-floatingActionBarBorder: #2c2c30;
   --color-floatingActionBarText: #ffffff;
-
   --color-tooltipText: #ffffff;
-  --color-tooltipBackground: #191a1b;
-  --color-tooltipBorder: #2d2f34;
+  --color-tooltipBackground: #19191b;
+  --color-tooltipBorder: #2c2c30;
 
-  --color-calendarCellBackground: #1d1d20;
+  --color-calendarCellBackground: #1c1c1e;
 
-  --color-overlayBackground: rgba(0, 0, 0, 0.4);
+  --color-overlayBackground: rgba(0, 0, 0, 0.5);
 
   --color-chartQual1: var(--palette-chartQual1);
   --color-chartQual2: var(--palette-chartQual2);

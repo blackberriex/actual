@@ -49,7 +49,10 @@ export const accountNameStyle: CSSProperties = {
   borderRadius: 6,
   textDecoration: 'none',
   color: theme.sidebarItemText,
-  ':hover': { backgroundColor: theme.sidebarItemBackgroundHover },
+  ':hover': {
+    backgroundColor: theme.sidebarItemBackgroundHover,
+    color: theme.sidebarItemTextHighlight,
+  },
   ...styles.smallText,
 };
 
@@ -184,9 +187,13 @@ export function Account<FieldName extends SheetFields<'account'>>({
                     color: theme.sidebarItemTextSelected,
                   }
                 : {
-                    backgroundColor: theme.sidebarItemBackgroundHover,
+                    backgroundColor: theme.sidebarItemAccentSelected,
                     color: theme.sidebarItemTextSelected,
                     fontWeight: (style && style.fontWeight) || 'normal',
+                    ':hover': {
+                      backgroundColor: theme.sidebarItemAccentSelected,
+                      color: theme.sidebarItemTextSelected,
+                    },
                   }
             }
           >
