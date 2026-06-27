@@ -3,10 +3,10 @@
   --font-family-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Page backgrounds */
-  --color-pageBackground: #1f2023;
+  --color-pageBackground: #191a1b;
   --color-pageBackgroundModalActive: #191a1b;
-  --color-pageBackgroundTopLeft: #1f2023;
-  --color-pageBackgroundBottomRight: #1f2023;
+  --color-pageBackgroundTopLeft: #191a1b;
+  --color-pageBackgroundBottomRight: #191a1b;
   --color-pageBackgroundLineTop: #2d2f34;
   --color-pageBackgroundLineMid: #2d2f34;
   --color-pageBackgroundLineBottom: #2d2f34;
@@ -69,6 +69,7 @@
   --color-sidebarItemAccentSelected: #ffffff;
   --color-sidebarItemBackgroundHover: #26272b;
   --color-sidebarItemText: #98a1ae;
+  --color-sidebarItemTextHighlight: #efefef;
   --color-sidebarItemTextUpdated: #ffffff;
   --color-sidebarItemTextSelected: #ffffff;
   --color-sidebarBudgetName: #ffffff;
@@ -238,10 +239,10 @@
   --color-reportsGray: #747c8b;
   --color-reportsLabel: #e3e8ed;
   --color-reportsInnerLabel: #1d1d20;
-  --color-reportsNumberPositive: var(--color-numberPositive);
-  --color-reportsNumberNegative: var(--color-numberNegative);
+  --color-reportsNumberPositive: #589b4f;
+  --color-reportsNumberNegative: #eb4949;
   --color-reportsNumberNeutral: var(--color-numberNeutral);
-  --color-reportsChartFill: var(--color-numberPositive);
+  --color-reportsChartFill: var(--color-reportsNumberPositive);
 
   /* Note Tags */
   --color-noteTagBackground: #26272b;

@@ -27,6 +27,7 @@ type ItemProps = {
   onClick?: ComponentProps<typeof ItemContent>['onClick'];
   forceHover?: boolean;
   forceActive?: boolean;
+  iconColor?: string;
 };
 
 export function Item({
@@ -39,6 +40,7 @@ export function Item({
   indent = 0,
   forceHover = false,
   forceActive = false,
+  iconColor,
 }: ItemProps) {
   const hoverStyle = {
     backgroundColor: theme.sidebarItemBackgroundHover,
@@ -49,10 +51,24 @@ export function Item({
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        height: 20,
+        height: 18,
       }}
     >
-      <Icon width={15} height={15} />
+      <View
+        style={{
+          width: 16,
+          height: 16,
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        <Icon
+          width={14}
+          height={14}
+          style={iconColor ? { color: iconColor } : undefined}
+        />
+      </View>
       <Block style={{ marginLeft: 8 }}>{title}</Block>
       <View style={{ flex: 1 }} />
     </View>
@@ -62,11 +78,13 @@ export function Item({
     <View style={{ flexShrink: 0, ...style }}>
       <ItemContent
         style={{
-          ...styles.mediumText,
-          paddingTop: 9,
-          paddingBottom: 9,
-          paddingLeft: 19 + indent,
-          paddingRight: 10,
+          ...styles.smallText,
+          paddingTop: 5,
+          paddingBottom: 5,
+          paddingLeft: 12 + indent,
+          paddingRight: 8,
+          margin: '2px 8px',
+          borderRadius: 6,
           textDecoration: 'none',
           color: theme.sidebarItemText,
           ...(forceHover ? hoverStyle : {}),
@@ -74,8 +92,7 @@ export function Item({
         }}
         forceActive={forceActive}
         activeStyle={{
-          borderLeft: '4px solid ' + theme.sidebarItemTextSelected,
-          paddingLeft: 19 + indent - 4,
+          backgroundColor: theme.sidebarItemBackgroundHover,
           color: theme.sidebarItemTextSelected,
         }}
         to={to}
@@ -83,7 +100,7 @@ export function Item({
       >
         {content}
       </ItemContent>
-      {children ? <View style={{ marginTop: 5 }}>{children}</View> : null}
+      {children ? <View style={{ marginTop: 2 }}>{children}</View> : null}
     </View>
   );
 }

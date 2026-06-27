@@ -45,7 +45,19 @@ export function SecondaryItem({
         height: 16,
       }}
     >
-      {Icon && <Icon width={12} height={12} />}
+      {Icon && (
+        <View
+          style={{
+            width: 14,
+            height: 14,
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <Icon width={12} height={12} />
+        </View>
+      )}
       <Block style={{ marginLeft: Icon ? 8 : 0, color: 'inherit' }}>
         {title}
       </Block>
@@ -58,15 +70,17 @@ export function SecondaryItem({
         style={{
           ...accountNameStyle,
           color: theme.sidebarItemText,
-          paddingLeft: 14 + indent,
+          paddingLeft: 12 + indent,
+          paddingRight: 8,
+          margin: '2px 8px',
+          borderRadius: 6,
           fontWeight: bold ? fontWeight : null,
           ':hover': { backgroundColor: theme.sidebarItemBackgroundHover },
         }}
         to={to}
         onClick={onClick}
         activeStyle={{
-          borderLeft: '4px solid ' + theme.sidebarItemTextSelected,
-          paddingLeft: 14 - 4 + indent,
+          backgroundColor: theme.sidebarItemBackgroundHover,
           color: theme.sidebarItemTextSelected,
           fontWeight: bold ? fontWeight : null,
         }}

@@ -275,7 +275,6 @@ export function Titlebar({ style }: TitlebarProps) {
   const sidebar = useSidebar();
   const { isNarrowWidth } = useResponsive();
   const serverURL = useServerURL();
-  const [floatingSidebar] = useGlobalPref('floatingSidebar');
   const isTestEnv = useIsTestEnv();
 
   return isNarrowWidth ? null : (
@@ -289,13 +288,13 @@ export function Titlebar({ style }: TitlebarProps) {
         '& *': {
           pointerEvents: 'auto',
         },
-        ...(!Platform.isBrowser && Platform.OS === 'mac' && floatingSidebar
+        ...(!Platform.isBrowser && Platform.OS === 'mac' && sidebar.floating
           ? { paddingLeft: 80 }
           : {}),
         ...style,
       }}
     >
-      {(floatingSidebar || sidebar.alwaysFloats) && (
+      {sidebar.alwaysFloats && (
         <Button
           aria-label={t('Sidebar menu')}
           variant="bare"

@@ -69,8 +69,9 @@ export const BudgetSummary = memo(({ month }: BudgetSummaryProps) => {
           month === currentMonth
             ? theme.budgetCurrentMonth
             : theme.budgetOtherMonth,
-        boxShadow: styles.cardShadow,
-        borderRadius: 6,
+        border: '1px solid ' + theme.cardBorder,
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+        borderRadius: 12,
         marginLeft: 0,
         marginRight: 0,
         marginTop: 5,

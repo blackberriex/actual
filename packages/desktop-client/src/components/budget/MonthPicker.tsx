@@ -1,13 +1,16 @@
 // @ts-strict-ignore
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Button } from '@actual-app/components/button';
 import {
   SvgCheveronLeft,
   SvgCheveronRight,
+  SvgCheveronDown,
 } from '@actual-app/components/icons/v1';
 import { SvgCalendar } from '@actual-app/components/icons/v2';
+import { Popover } from '@actual-app/components/popover';
 import { styles } from '@actual-app/components/styles';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
@@ -36,41 +39,57 @@ export const MonthPicker = ({
 }: MonthPickerProps) => {
   const locale = useLocale();
   const { t } = useTranslation();
-  const [hoverId, setHoverId] = useState(null);
-  const [targetMonthCount, setTargetMonthCount] = useState(12);
+  const [hoverId, setHoverId] = useState<number | null>(null);
+  const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
 
   const currentMonth = monthUtils.currentMonth();
   const firstSelectedMonth = startMonth;
-
   const lastSelectedMonth = monthUtils.addMonths(
     firstSelectedMonth,
     numDisplayed - 1,
   );
 
-  const range = monthUtils.rangeInclusive(
-    monthUtils.subMonths(
-      firstSelectedMonth,
-      Math.floor(targetMonthCount / 2 - numDisplayed / 2),
-    ),
-    monthUtils.addMonths(
-      lastSelectedMonth,
-      Math.floor(targetMonthCount / 2 - numDisplayed / 2),
-    ),
-  );
-
-  const firstSelectedIndex =
-    Math.floor(range.length / 2) - Math.floor(numDisplayed / 2);
-  const lastSelectedIndex = firstSelectedIndex + numDisplayed - 1;
+  const currentYear = parseInt(monthUtils.getYear(startMonth));
 
   const [size, setSize] = useState('small');
   const containerRef = useResizeObserver(rect => {
-    setSize(rect.width <= 550 ? 'small' : 'big');
-    setTargetMonthCount(
-      Math.min(Math.max(Math.floor(rect.width / 46), 12), 24),
-    );
+    // If the available width is narrow (e.g. when showing 1 month), set to 'small'
+    setSize(rect.width <= 680 ? 'small' : 'big');
   });
 
-  const yearHeadersShown = [];
+  // Dynamically build the list of months to render
+  const monthsToRender: string[] = [];
+  if (size === 'small') {
+    // Render 5 months centered around the start selection to fit narrow screen space
+    for (let i = -2; i <= 2; i++) {
+      monthsToRender.push(monthUtils.addMonths(firstSelectedMonth, i));
+    }
+  } else {
+    // Render all 12 months of the currently active year
+    for (let i = 1; i <= 12; i++) {
+      monthsToRender.push(`${currentYear}-${String(i).padStart(2, '0')}`);
+    }
+  }
+
+  const yearTriggerRef = useRef<HTMLButtonElement>(null);
+
+  // Parse bounds and generate available years
+  const startBoundYear = parseInt(monthUtils.getYear(monthBounds.start));
+  const endBoundYear = parseInt(monthUtils.getYear(monthBounds.end));
+  const years: number[] = [];
+  for (
+    let y = Math.min(startBoundYear, currentYear - 3);
+    y <= Math.max(endBoundYear, currentYear + 3);
+    y++
+  ) {
+    years.push(y);
+  }
+
+  const onYearSelect = (year: number) => {
+    const monthPart = startMonth.split('-')[1];
+    onSelect(`${year}-${monthPart}`);
+    setYearDropdownOpen(false);
+  };
 
   return (
     <View
@@ -88,7 +107,7 @@ export const MonthPicker = ({
           flex: 1,
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '2px',
+          gap: '8px',
         }}
       >
         <Link
@@ -96,182 +115,212 @@ export const MonthPicker = ({
           buttonVariant="bare"
           onPress={() => onSelect(currentMonth)}
           style={{
-            padding: '3px 3px',
-            marginRight: '12px',
+            padding: '4px 6px',
+            borderRadius: 6,
           }}
         >
           <View title={t('Today')}>
             <SvgCalendar
               style={{
-                width: 16,
-                height: 16,
+                width: 14,
+                height: 14,
               }}
             />
           </View>
         </Link>
+
         <Link
           variant="button"
           buttonVariant="bare"
           onPress={() => onSelect(monthUtils.prevMonth(startMonth))}
           style={{
-            padding: '3px 3px',
-            marginRight: '12px',
+            padding: '4px 6px',
+            borderRadius: 6,
           }}
         >
           <View title={t('Previous month')}>
             <SvgCheveronLeft
               style={{
-                width: 16,
-                height: 16,
+                width: 14,
+                height: 14,
               }}
             />
           </View>
         </Link>
-        {range.map((month, idx) => {
-          const monthName = monthUtils.format(month, 'MMM', locale);
-          const selected =
-            idx >= firstSelectedIndex && idx <= lastSelectedIndex;
 
-          const lastHoverId = hoverId + numDisplayed - 1;
-          const hovered =
-            hoverId === null ? false : idx >= hoverId && idx <= lastHoverId;
+        {/* Year Dropdown Button */}
+        <Button
+          ref={yearTriggerRef}
+          variant="bare"
+          onPress={() => setYearDropdownOpen(true)}
+          style={{
+            padding: '4px 8px',
+            fontSize: 13,
+            fontWeight: 600,
+            borderRadius: 6,
+            backgroundColor: theme.buttonBareBackgroundHover,
+            color: theme.pageText,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: '4px',
+          }}
+        >
+          <span>{currentYear}</span>
+          <SvgCheveronDown style={{ width: 10, height: 10, opacity: 0.6 }} />
+        </Button>
 
-          const nextSelected =
-            idx + 1 >= firstSelectedIndex && idx + 1 <= lastSelectedIndex;
-          const nextHovered =
-            hoverId === null ? false : idx + 1 >= hoverId && idx + 1 <= lastHoverId;
+        <Popover
+          triggerRef={yearTriggerRef}
+          isOpen={yearDropdownOpen}
+          onOpenChange={setYearDropdownOpen}
+          style={{ width: 100, borderRadius: 10, border: '1px solid ' + theme.menuBorder, backgroundColor: theme.menuBackground }}
+        >
+          <View style={{ padding: 4, gap: '2px' }}>
+            {years.map(y => (
+              <Button
+                key={y}
+                variant={y === currentYear ? 'primary' : 'bare'}
+                onPress={() => onYearSelect(y)}
+                style={{
+                  padding: '6px 8px',
+                  fontSize: 12,
+                  fontWeight: y === currentYear ? 600 : 400,
+                  borderRadius: 6,
+                  justifyContent: 'center',
+                }}
+              >
+                {y}
+              </Button>
+            ))}
+          </View>
+        </Popover>
 
-          const noGapAfter = (selected && nextSelected) || (hovered && nextHovered);
+        {/* Connected Segmented Month Control */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: theme.buttonBareBackgroundHover,
+            padding: '2px',
+            borderRadius: 8,
+            gap: '1px',
+          }}
+        >
+          {(() => {
+            const lastHoverId = hoverId === null ? null : hoverId + numDisplayed - 1;
+            const monthStates = monthsToRender.map((m, i) => {
+              const isSelected = m >= firstSelectedMonth && m <= lastSelectedMonth;
+              const isHovered = hoverId === null ? false : i >= hoverId && i <= lastHoverId;
 
-          const current = currentMonth === month;
-          const year = monthUtils.getYear(month);
+              if (isSelected) return 'selected';
+              if (isHovered) return 'hovered';
+              return 'normal';
+            });
 
-          let showYearHeader = false;
+            return monthsToRender.map((month, idx) => {
+              const shortMonthName = monthUtils.format(month, 'MMM', locale);
 
-          if (!yearHeadersShown.includes(year)) {
-            yearHeadersShown.push(year);
-            showYearHeader = true;
-          }
+              const state = monthStates[idx];
+              const stateBefore = idx > 0 ? monthStates[idx - 1] : 'normal';
+              const stateAfter = idx < monthsToRender.length - 1 ? monthStates[idx + 1] : 'normal';
 
-          const isMonthBudgeted =
-            month >= monthBounds.start && month <= monthBounds.end;
+              const mergeLeft = state === stateBefore && state !== 'normal';
+              const mergeRight = state === stateAfter && state !== 'normal';
 
-          return (
-            <View
-              key={month}
-              data-testid={selected ? 'selected-budget-month' : undefined}
-              data-month={selected ? month : undefined}
-              style={{
-                alignItems: 'center',
-                padding: '3px 3px',
-                width: size === 'big' ? '42px' : '20px',
-                whiteSpace: 'nowrap',
-                textAlign: 'center',
-                userSelect: 'none',
-                cursor: 'default',
-                borderRadius: 2,
-                border: 'none',
-                marginRight: noGapAfter ? '0px' : '4px',
-                ...(!isMonthBudgeted && {
-                  textDecoration: 'line-through',
-                  color: theme.pageTextSubdued,
-                }),
-                ...styles.smallText,
-                ...(selected && {
-                  backgroundColor: theme.buttonPrimaryBackground,
-                  color: theme.buttonPrimaryText,
-                }),
-                ...((hovered || selected) && {
-                  borderRadius: 0,
-                  cursor: 'pointer',
-                }),
-                ...(hoverId !== null &&
-                  !hovered &&
-                  selected && {
-                    filter: 'brightness(65%)',
-                  }),
-                ...(hovered &&
-                  !selected && {
-                    backgroundColor: theme.buttonBareBackgroundHover,
-                  }),
-                ...(!hovered &&
-                  !selected &&
-                  current && {
-                    backgroundColor: theme.buttonBareBackgroundHover,
-                    filter: 'brightness(120%)',
-                  }),
-                ...(hovered &&
-                  selected &&
-                  current && {
-                    filter: 'brightness(120%)',
-                  }),
-                ...(hovered &&
-                  selected && {
-                    backgroundColor: theme.buttonPrimaryBackground,
-                  }),
-                ...((idx === firstSelectedIndex ||
-                  (idx === hoverId && !selected)) && {
-                  borderTopLeftRadius: 2,
-                  borderBottomLeftRadius: 2,
-                }),
-                ...((idx === lastSelectedIndex ||
-                  (idx === lastHoverId && !selected)) && {
-                  borderTopRightRadius: 2,
-                  borderBottomRightRadius: 2,
-                }),
-                ...(current && { fontWeight: 'bold' }),
-              }}
-              onClick={() => onSelect(month)}
-              onMouseEnter={() => setHoverId(idx)}
-              onMouseLeave={() => setHoverId(null)}
-            >
-              <View>
-                {size === 'small' ? monthName[0] : monthName}
-                {showYearHeader && (
-                  <View
-                    style={{
-                      position: 'absolute',
-                      top: -16,
-                      left: 0,
-                      fontSize: 10,
-                      fontWeight: 'bold',
-                      color: isMonthBudgeted
-                        ? theme.pageText
-                        : theme.pageTextSubdued,
-                    }}
-                  >
-                    {year}
-                  </View>
-                )}
-              </View>
-            </View>
-          );
-        })}
+              const roundLeft = !mergeLeft;
+              const roundRight = !mergeRight;
+              const noGapAfter = mergeRight;
+
+              const selected = state === 'selected';
+              const hovered = state === 'hovered';
+              const current = currentMonth === month;
+              const isMonthBudgeted =
+                month >= monthBounds.start && month <= monthBounds.end;
+
+              return (
+                <View
+                  key={month}
+                  style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingTop: 4,
+                    paddingBottom: 4,
+                    width: size === 'big' ? '46px' : '40px',
+                    flexShrink: 0, // prevent text overlapping and squishing in flex layout
+                    whiteSpace: 'nowrap',
+                    textAlign: 'center',
+                    userSelect: 'none',
+                    cursor: 'pointer',
+                    borderTopLeftRadius: roundLeft ? 6 : 0,
+                    borderBottomLeftRadius: roundLeft ? 6 : 0,
+                    borderTopRightRadius: roundRight ? 6 : 0,
+                    borderBottomRightRadius: roundRight ? 6 : 0,
+                    border: 'none',
+                    marginRight: noGapAfter ? '0px' : '1px',
+                    ...(!isMonthBudgeted && {
+                      textDecoration: 'line-through',
+                      color: theme.pageTextSubdued,
+                    }),
+                    ...styles.smallText,
+                    ...(selected && {
+                      backgroundColor: theme.buttonPrimaryBackground,
+                      color: theme.buttonPrimaryText,
+                    }),
+                    ...(hoverId !== null &&
+                      !hovered &&
+                      selected && {
+                        filter: 'brightness(65%)',
+                      }),
+                    ...(hovered &&
+                      !selected && {
+                        backgroundColor: theme.buttonBareBackgroundHover,
+                      }),
+                    ...(!hovered &&
+                      !selected &&
+                      current && {
+                        backgroundColor: theme.buttonBareBackgroundHover,
+                        filter: 'brightness(120%)',
+                      }),
+                    ...(hovered &&
+                      selected &&
+                      current && {
+                        filter: 'brightness(120%)',
+                      }),
+                    ...(hovered &&
+                      selected && {
+                        backgroundColor: theme.buttonPrimaryBackground,
+                      }),
+                    ...(current && { fontWeight: 'bold' }),
+                  }}
+                  onClick={() => onSelect(month)}
+                  onMouseEnter={() => setHoverId(idx)}
+                  onMouseLeave={() => setHoverId(null)}
+                >
+                  <span>{shortMonthName}</span>
+                </View>
+              );
+            });
+          })()}
+        </View>
+
         <Link
           variant="button"
           buttonVariant="bare"
           onPress={() => onSelect(monthUtils.nextMonth(startMonth))}
           style={{
-            padding: '3px 3px',
-            marginLeft: '12px',
+            padding: '4px 6px',
+            borderRadius: 6,
           }}
         >
           <View title={t('Next month')}>
             <SvgCheveronRight
               style={{
-                width: 16,
-                height: 16,
+                width: 14,
+                height: 14,
               }}
             />
           </View>
         </Link>
-        {/*Keep range centered*/}
-        <span
-          style={{
-            width: '22px',
-            marginLeft: '12px',
-          }}
-        />
       </View>
     </View>
   );

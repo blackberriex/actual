@@ -1875,7 +1875,7 @@ class AccountInternal extends PureComponent<
                 onMergeTransactions={this.onMergeTransactions}
               />
 
-              <View style={{ flex: 1 }}>
+              <View style={{ ...styles.pageContent, flex: 1, marginTop: 15, marginBottom: 20 }}>
                 <TransactionList
                   headerContent={undefined}
                   // @ts-expect-error - fix me

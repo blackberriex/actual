@@ -81,7 +81,9 @@ function getWidgetMinHeight(widget: DashboardWidgetEntity) {
   if (
     isCustomReportWidget(widget) ||
     widget.type === 'markdown-card' ||
-    widget.type === 'formula-card'
+    widget.type === 'formula-card' ||
+    widget.type === 'summary-card' ||
+    widget.type === 'age-of-money-card'
   ) {
     return 1;
   }

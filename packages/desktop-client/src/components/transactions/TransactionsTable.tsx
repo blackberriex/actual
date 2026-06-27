@@ -197,7 +197,7 @@ const TransactionHeader = memo(
           color: theme.tableHeaderText,
           backgroundColor: theme.tableHeaderBackground,
           paddingRight: `${5 + (scrollWidth ?? 0)}px`,
-          borderTopWidth: 1,
+          borderTopWidth: 0,
           borderBottomWidth: 1,
           borderColor: theme.tableBorder,
         }}
@@ -2581,6 +2581,8 @@ function TransactionTableInner({
       style={{
         flex: 1,
         cursor: 'default',
+        ...styles.tableContainer,
+        backgroundColor: theme.tableBackground,
         ...props.style,
       }}
     >

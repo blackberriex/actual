@@ -35,7 +35,7 @@ export function BudgetName({ children }: BudgetNameProps) {
         height: 30,
         flexDirection: 'row',
         alignItems: 'center',
-        margin: '0 8px 23px 20px',
+        margin: '0 8px 16px 20px',
         userSelect: 'none',
         transition: 'padding .4s',
         ...(hasWindowButtons
@@ -127,8 +127,8 @@ function EditableBudgetName() {
         variant="bare"
         style={{
           color: theme.sidebarBudgetName,
-          fontSize: 16,
-          fontWeight: 500,
+          fontSize: 13,
+          fontWeight: 600,
           marginLeft: -5,
           flex: '0 auto',
           fontFamily: 'var(--font-family-display)',

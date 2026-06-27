@@ -272,12 +272,12 @@ export function BudgetTable(props: BudgetTableProps) {
             flex: 1,
             marginLeft: 5,
             marginRight: 5,
-            border: '1px solid ' + theme.tableBorder,
-            borderRadius: 10,
+            border: '1px solid ' + theme.cardBorder,
+            borderRadius: 12,
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: styles.cardShadow,
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
             backgroundColor: theme.budgetCurrentMonth,
           }}
         >

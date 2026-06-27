@@ -20,11 +20,10 @@ type SidebarProviderProps = {
 };
 
 export function SidebarProvider({ children }: SidebarProviderProps) {
-  const [floatingSidebar] = useGlobalPref('floatingSidebar');
   const [hidden, setHidden] = useState(true);
   const { width } = useResponsive();
   const alwaysFloats = width < 668;
-  const floating = floatingSidebar || alwaysFloats;
+  const floating = alwaysFloats;
 
   return (
     <SidebarContext.Provider

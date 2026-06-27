@@ -91,16 +91,16 @@ export function SummaryNumber({
                   : t('Positive amount: {{amount}}', { amount: displayAmount })
           }
           style={{
-            alignItems: 'center',
-            flexGrow: 1,
-            flexShrink: 1,
+            alignItems: 'flex-start',
+            justifyContent: 'flex-start',
             width: '100%',
-            height: '100%',
             maxWidth: '100%',
-            fontSize,
+            fontSize: Math.min(fontSize, 36),
+            fontWeight: 600,
+            fontFamily: 'var(--font-family-display)',
+            letterSpacing: -0.5,
             lineHeight: 1,
-            margin: `${CONTAINER_MARGIN}px 0`,
-            justifyContent: 'center',
+            margin: 0,
             transition: animate ? 'font-size 0.3s ease' : '',
             color: !isNumericValue
               ? theme.reportsNumberNeutral
@@ -109,6 +109,7 @@ export function SummaryNumber({
                 : value < 0
                   ? theme.reportsNumberNegative
                   : theme.reportsNumberPositive,
+            fontFeatureSettings: '"tnum", "ss01", "ss04"',
           }}
         >
           {!hasSized ? (

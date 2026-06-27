@@ -39,12 +39,14 @@ import { useDispatch } from '#redux';
 import type { Binding, SheetFields } from '#spreadsheet';
 
 export const accountNameStyle: CSSProperties = {
-  marginTop: -2,
-  marginBottom: 2,
-  paddingTop: 4,
-  paddingBottom: 4,
-  paddingRight: 15,
-  paddingLeft: 10,
+  marginTop: 1,
+  marginBottom: 1,
+  paddingTop: 5,
+  paddingBottom: 5,
+  paddingRight: 12,
+  paddingLeft: 12,
+  margin: '2px 8px',
+  borderRadius: 6,
   textDecoration: 'none',
   color: theme.sidebarItemText,
   ':hover': { backgroundColor: theme.sidebarItemBackgroundHover },
@@ -67,6 +69,7 @@ type AccountProps<FieldName extends SheetFields<'account'>> = {
   titleAccount?: boolean;
   isExactPathMatch?: boolean;
   balanceTestId?: string;
+  balanceStyle?: CSSProperties;
 };
 
 export function Account<FieldName extends SheetFields<'account'>>({
@@ -85,6 +88,7 @@ export function Account<FieldName extends SheetFields<'account'>>({
   titleAccount,
   isExactPathMatch,
   balanceTestId,
+  balanceStyle,
 }: AccountProps<FieldName>) {
   const isTestEnv = useIsTestEnv();
   const { t } = useTranslation();
@@ -146,69 +150,80 @@ export function Account<FieldName extends SheetFields<'account'>>({
             to={to}
             isDisabled={isEditing}
             isExactPathMatch={isExactPathMatch}
-            style={{
-              ...accountNameStyle,
-              ...style,
-              position: 'relative',
-              borderLeft: '4px solid transparent',
-              ...(updated && {
-                fontWeight: 600,
-                color: theme.sidebarItemTextUpdated,
-              }),
-            }}
-            activeStyle={{
-              borderColor: theme.sidebarItemAccentSelected,
-              color: theme.sidebarItemTextSelected,
-              // This is kind of a hack, but we don't ever want the account
-              // that the user is looking at to be "bolded" which means it
-              // has unread transactions. The system does mark is read and
-              // unbolds it, but it still "flashes" bold so this just
-              // ignores it if it's active
-              fontWeight: (style && style.fontWeight) || 'normal',
-              '& .dot': {
-                backgroundColor: theme.sidebarItemAccentSelected,
-                transform: 'translateX(-4.5px)',
-              },
-            }}
+            style={
+              titleAccount
+                ? {
+                    marginTop: 16,
+                    marginBottom: 6,
+                    paddingTop: 4,
+                    paddingBottom: 4,
+                    paddingLeft: 12,
+                    paddingRight: 12,
+                    margin: '0 8px',
+                    textDecoration: 'none',
+                    color: theme.pageTextSubdued,
+                    textTransform: 'uppercase',
+                    fontSize: 10,
+                    letterSpacing: '0.05em',
+                    fontWeight: 600,
+                    ':hover': { color: theme.sidebarItemTextSelected },
+                  }
+                : {
+                    ...accountNameStyle,
+                    ...style,
+                    position: 'relative',
+                    ...(updated && {
+                      fontWeight: 600,
+                      color: theme.sidebarItemTextUpdated,
+                    }),
+                  }
+            }
+            activeStyle={
+              titleAccount
+                ? {
+                    color: theme.sidebarItemTextSelected,
+                  }
+                : {
+                    backgroundColor: theme.sidebarItemBackgroundHover,
+                    color: theme.sidebarItemTextSelected,
+                    fontWeight: (style && style.fontWeight) || 'normal',
+                  }
+            }
           >
-            <View
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                bottom: 0,
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
-              <div
-                className={cx(
-                  'dot',
-                  css({
-                    marginRight: 3,
-                    width: 5,
-                    height: 5,
-                    borderRadius: 5,
-                    backgroundColor: pending
-                      ? theme.sidebarItemBackgroundPending
-                      : failed
-                        ? theme.sidebarItemBackgroundFailed
-                        : theme.sidebarItemBackgroundPositive,
-                    marginLeft: 2,
-                    transition: 'transform .3s',
-                    opacity: connected ? 1 : 0,
-                  }),
-                )}
-              />
-            </View>
+            {!titleAccount && (
+              <View
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}
+              >
+                <div
+                  className={cx(
+                    'dot',
+                    css({
+                      marginRight: 3,
+                      width: 5,
+                      height: 5,
+                      borderRadius: 5,
+                      backgroundColor: pending
+                        ? theme.sidebarItemBackgroundPending
+                        : failed
+                          ? theme.sidebarItemBackgroundFailed
+                          : theme.sidebarItemBackgroundPositive,
+                      marginLeft: 2,
+                      transition: 'transform .3s',
+                      opacity: connected ? 1 : 0,
+                    }),
+                  )}
+                />
+              </View>
+            )}
 
             <AlignedText
-              style={
-                titleAccount && {
-                  borderBottom: `1.5px solid rgba(255,255,255,0.4)`,
-                  paddingBottom: '3px',
-                }
-              }
               left={
                 isEditing ? (
                   <InitialFocus>
@@ -238,11 +253,9 @@ export function Account<FieldName extends SheetFields<'account'>>({
                 )
               }
               right={
-                balanceTestId ? (
-                  <View data-testid={balanceTestId}>{balanceCell}</View>
-                ) : (
-                  balanceCell
-                )
+                <View style={balanceStyle} data-testid={balanceTestId}>
+                  {balanceCell}
+                </View>
               }
             />
           </Link>

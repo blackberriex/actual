@@ -63,11 +63,12 @@ export function ReportCard({
       ref={ref}
       style={{
         backgroundColor: theme.tableBackground,
-        borderBottomLeftRadius: 2,
-        borderBottomRightRadius: 2,
+        borderRadius: 12,
+        border: '1px solid ' + theme.cardBorder,
         width: '100%',
         height: '100%',
-        boxShadow: '0 2px 6px rgba(0, 0, 0, .15)',
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+        overflow: 'hidden',
         transition: 'box-shadow .25s',
         ...(isEditing
           ? {
@@ -84,7 +85,7 @@ export function ReportCard({
               },
             }),
         ':hover': {
-          ...(to ? { boxShadow: '0 4px 6px rgba(0, 0, 0, .15)' } : null),
+          ...(to ? { boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' } : null),
           ...(isEditing ? { cursor: 'move', filter: 'grayscale(0)' } : null),
         },
         ...(to ? null : containerProps),

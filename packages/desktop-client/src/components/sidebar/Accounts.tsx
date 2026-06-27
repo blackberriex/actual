@@ -83,8 +83,8 @@ export function Accounts() {
       <View
         style={{
           height: 1,
-          backgroundColor: theme.sidebarItemBackgroundHover,
-          marginTop: 15,
+          backgroundColor: 'rgba(255, 255, 255, 0.08)',
+          margin: '12px 16px 8px 16px',
           flexShrink: 0,
         }}
       />
@@ -94,24 +94,34 @@ export function Accounts() {
           name={t('All accounts')}
           to="/accounts"
           query={bindings.allAccountBalance()}
-          style={{ fontWeight, marginTop: 15 }}
+          style={{ fontWeight, marginTop: 8 }}
+          balanceStyle={{ color: theme.sidebarItemTextHighlight }}
           isExactPathMatch
           balanceTestId="sidebar-all-accounts-balance"
         />
 
         {onBudgetAccounts.length > 0 && (
-          <Account
-            name={t('On budget')}
-            to="/accounts/onbudget"
-            query={bindings.onBudgetAccountBalance()}
-            style={{
-              fontWeight,
-              marginTop: 13,
-              marginBottom: 5,
-            }}
-            titleAccount
-            balanceTestId="sidebar-on-budget-balance"
-          />
+          <>
+            <View
+              style={{
+                height: 1,
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                margin: '14px 16px 8px 16px',
+                flexShrink: 0,
+              }}
+            />
+            <Account
+              name={t('On budget')}
+              to="/accounts/onbudget"
+              query={bindings.onBudgetAccountBalance()}
+              style={{
+                fontWeight,
+                marginBottom: 5,
+              }}
+              titleAccount
+              balanceTestId="sidebar-on-budget-balance"
+            />
+          </>
         )}
 
         {onBudgetAccounts.map((account, i) => (
@@ -132,18 +142,27 @@ export function Accounts() {
         ))}
 
         {offbudgetAccounts.length > 0 && (
-          <Account
-            name={t('Off budget')}
-            to="/accounts/offbudget"
-            query={bindings.offBudgetAccountBalance()}
-            style={{
-              fontWeight,
-              marginTop: 13,
-              marginBottom: 5,
-            }}
-            titleAccount
-            balanceTestId="sidebar-off-budget-balance"
-          />
+          <>
+            <View
+              style={{
+                height: 1,
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                margin: '14px 16px 8px 16px',
+                flexShrink: 0,
+              }}
+            />
+            <Account
+              name={t('Off budget')}
+              to="/accounts/offbudget"
+              query={bindings.offBudgetAccountBalance()}
+              style={{
+                fontWeight,
+                marginBottom: 5,
+              }}
+              titleAccount
+              balanceTestId="sidebar-off-budget-balance"
+            />
+          </>
         )}
 
         {offbudgetAccounts.map((account, i) => (
@@ -164,16 +183,25 @@ export function Accounts() {
         ))}
 
         {closedAccounts.length > 0 && (
-          <SecondaryItem
-            style={{ marginTop: 15 }}
-            title={
-              showClosedAccounts
-                ? t('Closed accounts')
-                : t('Closed accounts...')
-            }
-            onClick={onToggleClosedAccounts}
-            bold
-          />
+          <>
+            <View
+              style={{
+                height: 1,
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                margin: '14px 16px 8px 16px',
+                flexShrink: 0,
+              }}
+            />
+            <SecondaryItem
+              title={
+                showClosedAccounts
+                  ? t('Closed accounts')
+                  : t('Closed accounts...')
+              }
+              onClick={onToggleClosedAccounts}
+              bold
+            />
+          </>
         )}
 
         {showClosedAccounts &&

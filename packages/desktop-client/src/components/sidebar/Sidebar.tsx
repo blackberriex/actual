@@ -13,7 +13,6 @@ import { css } from '@emotion/css';
 import { Resizable } from 're-resizable';
 
 import { FeatureErrorFallback } from '#components/FeatureErrorFallback';
-import { useGlobalPref } from '#hooks/useGlobalPref';
 import { useLocalPref } from '#hooks/useLocalPref';
 import { useResizeObserver } from '#hooks/useResizeObserver';
 import { replaceModal } from '#modals/modalsSlice';
@@ -24,7 +23,6 @@ import { BudgetName } from './BudgetName';
 import { PrimaryButtons } from './PrimaryButtons';
 import { SecondaryButtons } from './SecondaryButtons';
 import { useSidebar } from './SidebarProvider';
-import { ToggleButton } from './ToggleButton';
 
 export function Sidebar() {
   const hasWindowButtons = !Platform.isBrowser && Platform.OS === 'mac';
@@ -33,8 +31,7 @@ export function Sidebar() {
   const dispatch = useDispatch();
   const sidebar = useSidebar();
   const { width } = useResponsive();
-  const [isFloating = false, setFloatingSidebarPref] =
-    useGlobalPref('floatingSidebar');
+  const isFloating = false;
 
   const [sidebarWidthLocalPref, setSidebarWidthLocalPref] =
     useLocalPref('sidebarWidth');
@@ -54,10 +51,6 @@ export function Sidebar() {
 
   const onResizeStop = () => {
     setSidebarWidthLocalPref(sidebarWidth);
-  };
-
-  const onFloat = () => {
-    setFloatingSidebarPref(!isFloating);
   };
 
   const onAddAccount = () => {
@@ -108,11 +101,7 @@ export function Sidebar() {
             ...styles.darkScrollbar,
           })}
         >
-          <BudgetName>
-            {!sidebar.alwaysFloats && (
-              <ToggleButton isFloating={isFloating} onFloat={onFloat} />
-            )}
-          </BudgetName>
+          <BudgetName />
 
           <View
             style={{

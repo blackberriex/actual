@@ -170,18 +170,19 @@ export function FormulaResult({
           ref={mergedRef as Ref<HTMLDivElement>}
           aria-label={displayValue}
           style={{
-            alignItems: 'center',
-            flexGrow: 1,
-            flexShrink: 1,
+            alignItems: 'flex-start',
+            justifyContent: 'flex-start',
             width: '100%',
-            height: '100%',
             maxWidth: '100%',
-            fontSize,
+            fontSize: Math.min(fontSize, 36),
+            fontWeight: 600,
+            fontFamily: 'var(--font-family-display)',
+            letterSpacing: -0.5,
             lineHeight: 1,
-            margin: `${CONTAINER_MARGIN}px 0`,
-            justifyContent: 'center',
+            margin: 0,
             transition: animate ? 'font-size 0.3s ease' : '',
             color,
+            fontFeatureSettings: '"tnum", "ss01", "ss04"',
           }}
         >
           {!showContent ? (
@@ -191,7 +192,7 @@ export function FormulaResult({
               aria-hidden="true"
               style={{
                 whiteSpace: 'pre-wrap',
-                textAlign: 'center',
+                textAlign: 'left',
                 wordBreak: 'break-word',
               }}
             >
