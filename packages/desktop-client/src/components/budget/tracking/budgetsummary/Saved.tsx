@@ -34,23 +34,6 @@ export function Saved({ projected, style }: SavedProps) {
 
   return (
     <View style={{ alignItems: 'center', ...style }}>
-      <Block
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-          color: theme.pageTextSubdued,
-          marginBottom: 4,
-        }}
-      >
-        {projected
-          ? t('Projected savings')
-          : isNegative
-            ? t('Overspent')
-            : t('Saved')}
-      </Block>
-
       <Tooltip
         style={{ ...styles.tooltip, fontSize: 14, padding: 10 }}
         content={
@@ -78,21 +61,44 @@ export function Saved({ projected, style }: SavedProps) {
           isDisabled: Boolean(projected),
         }}
       >
-        <View
-          className={css({
-            fontSize: 24,
-            fontWeight: 700,
-            letterSpacing: '-0.02em',
-            fontFamily: 'var(--font-family-display)',
-            color: projected
-              ? theme.templateNumberUnderFunded
-              : isNegative
-                ? theme.budgetNumberNegative
-                : theme.templateNumberFunded,
-          })}
-        >
+        <View>
           <PrivacyFilter>
-            <FinancialText>{format(saved, 'financial')}</FinancialText>
+            <View
+              className={css({
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                backgroundColor: isNegative
+                  ? 'rgba(225, 63, 77, 0.08)'
+                  : 'rgba(163, 222, 65, 0.08)',
+                border: `1px solid ${
+                  isNegative
+                    ? 'rgba(225, 63, 77, 0.18)'
+                    : 'rgba(163, 222, 65, 0.18)'
+                }`,
+                borderRadius: 999,
+                padding: '4px 12px',
+                color: projected
+                  ? theme.templateNumberUnderFunded
+                  : isNegative
+                    ? theme.budgetNumberNegative
+                    : theme.templateNumberFunded,
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'default',
+                userSelect: 'none',
+              })}
+            >
+              <Block style={{ textTransform: 'uppercase', fontSize: 10, letterSpacing: '0.04em', opacity: 0.8, marginRight: 2 }}>
+                {projected
+                  ? t('Projected savings')
+                  : isNegative
+                    ? t('Overspent')
+                    : t('Saved')}
+              </Block>
+              <FinancialText>{format(saved, 'financial')}</FinancialText>
+            </View>
           </PrivacyFilter>
         </View>
       </Tooltip>

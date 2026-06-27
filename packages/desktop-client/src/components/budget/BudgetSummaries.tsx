@@ -98,6 +98,8 @@ export function BudgetSummaries() {
               key={month}
               style={{
                 flex: `0 0 ${monthWidth}px`,
+                paddingLeft: 4,
+                paddingRight: 4,
               }}
             >
               <SummaryComponent month={month} />

@@ -86,19 +86,7 @@ export function ToBudgetAmount({
           </Block>
         </View>
       ) : (
-        <View style={{ alignItems: 'center' }}>
-          <Block
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              color: theme.pageTextSubdued,
-              marginBottom: 4,
-            }}
-          >
-            {isNegative ? t('Overbudgeted') : t('To Budget')}
-          </Block>
+        <View style={{ alignItems: 'center', marginTop: 2 }}>
           <Tooltip
             content={
               <TotalsList
@@ -109,7 +97,7 @@ export function ToBudgetAmount({
               />
             }
             placement="bottom"
-            offset={3}
+            offset={5}
             triggerProps={{ isDisabled: isTotalsListTooltipDisabled }}
           >
             <PrivacyFilter
@@ -117,38 +105,60 @@ export function ToBudgetAmount({
                 textAlign: 'center',
               }}
             >
-              <Block
+              <View
                 onClick={onClick}
                 onContextMenu={onContextMenu}
                 data-cellname={sheetName}
                 className={css([
                   {
-                    fontSize: 24,
-                    fontWeight: 700,
-                    letterSpacing: '-0.02em',
-                    fontFamily: 'var(--font-family-display)',
-                    userSelect: 'none',
-                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    backgroundColor: isPositive
+                      ? 'rgba(163, 222, 65, 0.08)'
+                      : isNegative
+                        ? 'rgba(225, 63, 77, 0.08)'
+                        : 'rgba(110, 110, 119, 0.08)',
+                    border: `1px solid ${
+                      isPositive
+                        ? 'rgba(163, 222, 65, 0.18)'
+                        : isNegative
+                          ? 'rgba(225, 63, 77, 0.18)'
+                          : 'rgba(110, 110, 119, 0.18)'
+                    }`,
+                    borderRadius: 999,
+                    padding: '4px 12px',
                     color: isPositive
                       ? theme.toBudgetPositive
                       : isNegative
                         ? theme.toBudgetNegative
                         : theme.toBudgetZero,
-                    marginBottom: -1,
-                    borderBottom: '1px solid transparent',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    transition: 'all 150ms ease',
                     ':hover': {
-                      borderColor: isPositive
-                        ? theme.toBudgetPositive
+                      backgroundColor: isPositive
+                        ? 'rgba(163, 222, 65, 0.14)'
                         : isNegative
-                          ? theme.toBudgetNegative
-                          : theme.toBudgetZero,
+                          ? 'rgba(225, 63, 77, 0.14)'
+                          : 'rgba(110, 110, 119, 0.14)',
+                      transform: 'translateY(-0.5px)',
+                    },
+                    ':active': {
+                      transform: 'scale(0.98)',
                     },
                   },
                   amountStyle,
                 ])}
               >
+                <Block style={{ textTransform: 'uppercase', fontSize: 10, letterSpacing: '0.04em', opacity: 0.8, marginRight: 2 }}>
+                  {isNegative ? t('Overbudgeted') : t('To Budget')}
+                </Block>
                 <FinancialText>{format(num, 'financial')}</FinancialText>
-              </Block>
+              </View>
             </PrivacyFilter>
           </Tooltip>
         </View>
