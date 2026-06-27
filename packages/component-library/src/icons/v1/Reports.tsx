@@ -4,15 +4,20 @@ export const SvgReports = (props: SVGProps<SVGSVGElement>) => (
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 20 20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
     style={{
       color: 'inherit',
       ...props.style,
     }}
   >
-    <path
-      d="M19 18h-1v-8c0-.6-.4-1-1-1s-1 .4-1 1v8h-3V1c0-.6-.4-1-1-1s-1 .4-1 1v17H8V7c0-.6-.4-1-1-1s-1 .4-1 1v11H3V3c0-.6-.4-1-1-1s-1 .4-1 1v15c-.6 0-1 .4-1 1s.4 1 1 1h18c.6 0 1-.4 1-1s-.4-1-1-1"
-      fill="currentColor"
-    />
+    <line x1="18" x2="18" y1="20" y2="10" />
+    <line x1="12" x2="12" y1="20" y2="4" />
+    <line x1="6" x2="6" y1="20" y2="14" />
+    <line x1="3" x2="21" y1="20" y2="20" />
   </svg>
 );

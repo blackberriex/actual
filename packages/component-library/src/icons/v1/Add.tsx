@@ -5,20 +5,17 @@ export const SvgAdd = (props: SVGProps<SVGSVGElement>) => (
     {...props}
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
     style={{
       color: 'inherit',
       ...props.style,
     }}
   >
-    <path
-      fill="currentColor"
-      d="M23 11.5a1.5 1.5 0 0 1-1.5 1.5h-20a1.5 1.5 0 0 1 0-3h20a1.5 1.5 0 0 1 1.5 1.5"
-      className="path"
-    />
-    <path
-      fill="currentColor"
-      d="M11.5 23a1.5 1.5 0 0 1-1.5-1.5v-20a1.5 1.5 0 0 1 3 0v20a1.5 1.5 0 0 1-1.5 1.5"
-      className="path"
-    />
+    <path d="M5 12h14" />
+    <path d="M12 5v14" />
   </svg>
 );

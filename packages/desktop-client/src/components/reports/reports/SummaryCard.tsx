@@ -126,7 +126,9 @@ export function SummaryCard({
       }}
     >
       <View style={{ flex: 1, overflow: 'hidden' }}>
-        <View style={{ flexGrow: 0, flexShrink: 0, padding: '12px 16px 4px 16px' }}>
+        <View
+          style={{ flexGrow: 0, flexShrink: 0, padding: '12px 16px 4px 16px' }}
+        >
           <ReportCardName
             name={meta?.name || t('Summary')}
             isEditing={nameMenuOpen}

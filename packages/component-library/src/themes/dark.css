@@ -1,8 +1,11 @@
 :root {
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-display:
+    'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* ===== Page ===== */
+  --color-appBackground: #0e0e0f;
   --color-pageBackground: #161617;
   --color-pageBackgroundModalActive: #161617;
   --color-pageBackgroundTopLeft: #161617;
@@ -60,17 +63,18 @@
   --color-toBudgetNegative: var(--color-budgetNumberNegative);
 
   /* ===== Sidebar ===== */
-  --color-sidebarBackground: #161617;
+  --color-sidebarBackground: #131313;
+  --color-sidebarBorder: #2c2c30;
   --color-sidebarItemBackgroundPending: #e8c14a;
   --color-sidebarItemBackgroundPositive: #3ddc97;
   --color-sidebarItemBackgroundFailed: #f0616d;
-  --color-sidebarItemAccentSelected: #ffffff;
-  --color-sidebarItemBackgroundHover: #26262a;
-  --color-sidebarItemBackgroundSelected: #ffffff;
+  --color-sidebarItemAccentSelected: #161617;
+  --color-sidebarItemBackgroundHover: #181819;
+  --color-sidebarItemBackgroundSelected: #1c1c1d;
   --color-sidebarItemText: #9a9aa3;
   --color-sidebarItemTextHighlight: #f4f4f6;
   --color-sidebarItemTextUpdated: #ffffff;
-  --color-sidebarItemTextSelected: #161617;
+  --color-sidebarItemTextSelected: #ffffff;
   --color-sidebarBudgetName: #ffffff;
 
   /* ===== Menu ===== */
@@ -93,6 +97,7 @@
   /* ===== Modal ===== */
   --color-modalBackground: #1c1c1e;
   --color-modalBorder: #2c2c30;
+  --color-overlayBackground: rgba(0, 0, 0, 0.5);
 
   /* ===== Mobile ===== */
   --color-mobileHeaderBackground: #19191b;
@@ -129,9 +134,9 @@
   /* ===== Buttons: Primary ===== */
   --color-buttonPrimaryText: #161617;
   --color-buttonPrimaryTextHover: #161617;
-  --color-buttonPrimaryBackground: #ffffff;
-  --color-buttonPrimaryBackgroundHover: #e6e6ea;
-  --color-buttonPrimaryBorder: #ffffff;
+  --color-buttonPrimaryBackground: #c8f23f;
+  --color-buttonPrimaryBackgroundHover: #b8e22f;
+  --color-buttonPrimaryBorder: #c8f23f;
   --color-buttonPrimaryShadow: rgba(0, 0, 0, 0.35);
   --color-buttonPrimaryDisabledText: #6e6e77;
   --color-buttonPrimaryDisabledBackground: #26262a;
@@ -150,13 +155,6 @@
   --color-buttonNormalDisabledBackground: #1c1c1e;
   --color-buttonNormalDisabledBorder: #2c2c30;
 
-  /* ===== Calendar ===== */
-  --color-calendarText: #ffffff;
-  --color-calendarBackground: #19191b;
-  --color-calendarItemText: #e6e6ea;
-  --color-calendarItemBackground: #26262a;
-  --color-calendarSelectedBackground: #ffffff;
-
   /* ===== Buttons: Bare ===== */
   --color-buttonBareText: #e6e6ea;
   --color-buttonBareTextHover: #ffffff;
@@ -165,6 +163,14 @@
   --color-buttonBareDisabledBackground: transparent;
   --color-buttonBareBackgroundHover: rgba(255, 255, 255, 0.05);
   --color-buttonBareBackgroundActive: rgba(255, 255, 255, 0.1);
+
+  /* ===== Calendar ===== */
+  --color-calendarText: #ffffff;
+  --color-calendarBackground: #19191b;
+  --color-calendarItemText: #e6e6ea;
+  --color-calendarItemBackground: #26262a;
+  --color-calendarSelectedBackground: #ffffff;
+  --color-calendarCellBackground: #1c1c1e;
 
   /* ===== Notice / Warning / Error ===== */
   --color-noticeBackground: rgba(61, 220, 151, 0.1);
@@ -263,10 +269,8 @@
   --color-tooltipText: #ffffff;
   --color-tooltipBackground: #19191b;
   --color-tooltipBorder: #2c2c30;
-
-  --color-calendarCellBackground: #1c1c1e;
-
-  --color-overlayBackground: rgba(0, 0, 0, 0.5);
+  --color-popoverShadow:
+    0 10px 30px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.2);
 
   --color-chartQual1: var(--palette-chartQual1);
   --color-chartQual2: var(--palette-chartQual2);
@@ -278,3 +282,9 @@
   --color-chartQual8: var(--palette-chartQual8);
   --color-chartQual9: var(--palette-chartQual9);
 }
+
+.sidebar a.active {
+  background-color: var(--color-sidebarItemBackgroundSelected) !important;
+  color: var(--color-sidebarItemTextSelected) !important;
+}
+

@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
 import { AlignedText } from '@actual-app/components/aligned-text';
+import { Block } from '@actual-app/components/block';
 import { styles } from '@actual-app/components/styles';
 import { Text } from '@actual-app/components/text';
 import { theme } from '@actual-app/components/theme';
@@ -32,16 +33,23 @@ export function Saved({ projected, style }: SavedProps) {
   const diff = totalSaved - budgetedSaved;
 
   return (
-    <View style={{ alignItems: 'center', fontSize: 14, ...style }}>
-      {projected ? (
-        <Text style={{ color: theme.pageTextLight }}>
-          <Trans>Projected savings:</Trans>
-        </Text>
-      ) : (
-        <View style={{ color: theme.pageTextLight }}>
-          {isNegative ? t('Overspent:') : t('Saved:')}
-        </View>
-      )}
+    <View style={{ alignItems: 'center', ...style }}>
+      <Block
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          color: theme.pageTextSubdued,
+          marginBottom: 4,
+        }}
+      >
+        {projected
+          ? t('Projected savings')
+          : isNegative
+            ? t('Overspent')
+            : t('Saved')}
+      </Block>
 
       <Tooltip
         style={{ ...styles.tooltip, fontSize: 14, padding: 10 }}
@@ -72,7 +80,10 @@ export function Saved({ projected, style }: SavedProps) {
       >
         <View
           className={css({
-            fontSize: 25,
+            fontSize: 36,
+            fontWeight: 700,
+            letterSpacing: '-0.02em',
+            fontFamily: 'var(--font-family-display)',
             color: projected
               ? theme.templateNumberUnderFunded
               : isNegative

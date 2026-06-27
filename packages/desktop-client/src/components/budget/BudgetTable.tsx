@@ -274,7 +274,7 @@ export function BudgetTable(props: BudgetTableProps) {
             marginRight: 5,
             marginBottom: 8,
             border: '1px solid ' + theme.cardBorder,
-            borderRadius: 12,
+            borderRadius: 16,
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',

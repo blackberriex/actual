@@ -112,8 +112,6 @@ describe('useMetaThemeColor', () => {
       expect(document.body.style.backgroundColor).toBe('rgb(34, 34, 34)');
     });
 
-
-
     it('re-runs effect when system color scheme changes', async () => {
       let matches = false;
       const listeners = new Set<() => void>();

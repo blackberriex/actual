@@ -26,13 +26,22 @@ import { TextOneLine } from '@actual-app/components/text-one-line';
 import { theme } from '@actual-app/components/theme';
 import { tokens } from '@actual-app/components/tokens';
 import { View } from '@actual-app/components/view';
-import { css } from '@emotion/css';
+import { css, keyframes } from '@emotion/css';
 import { AutoTextSize } from 'auto-text-size';
 
 import { FeatureErrorFallback } from '#components/FeatureErrorFallback';
 import { useModalState } from '#hooks/useModalState';
 
 export const MODAL_Z_INDEX = 3000;
+
+const overlayFadeIn = keyframes({
+  from: {
+    opacity: 0,
+  },
+  to: {
+    opacity: 1,
+  },
+});
 
 type ModalProps = ComponentPropsWithRef<typeof ReactAriaModal> & {
   name: string;
@@ -88,14 +97,12 @@ export const Modal = ({
           inset: 0,
           zIndex: MODAL_Z_INDEX,
           fontSize: 14,
+          backgroundColor: theme.overlayBackground,
+          animation: `${overlayFadeIn} 150ms ease-out forwards`,
           // on mobile, we disable the blurred background for performance reasons
-          ...(isNarrowWidth
-            ? {
-                backgroundColor: 'rgba(0, 0, 0, 0.4)',
-              }
-            : {
-                backdropFilter: 'blur(2px) brightness(0.95)',
-              }),
+          ...(!isNarrowWidth && {
+            backdropFilter: 'blur(4px) brightness(0.85)',
+          }),
           ...style,
         }}
         {...props}
@@ -228,7 +235,7 @@ const ModalContentContainer = ({
         setTimeout(() => {
           if (contentRef.current) {
             contentRef.current.style.transition =
-              'opacity .1s, transform .1s cubic-bezier(.42, 0, .58, 1)';
+              'opacity 150ms, transform 150ms cubic-bezier(0.16, 1, 0.3, 1)';
           }
         }, 0);
       } else {
@@ -239,7 +246,7 @@ const ModalContentContainer = ({
           if (contentRef.current) {
             mounted.current = true;
             contentRef.current.style.transition =
-              'opacity .1s, transform .1s cubic-bezier(.42, 0, .58, 1)';
+              'opacity 150ms, transform 150ms cubic-bezier(0.16, 1, 0.3, 1)';
             contentRef.current.style.opacity = '1';
             setProps();
           }

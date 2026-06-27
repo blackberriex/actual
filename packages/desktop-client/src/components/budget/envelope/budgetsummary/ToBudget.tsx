@@ -75,6 +75,7 @@ export function ToBudget({
           amountStyle={amountStyle}
           isTotalsListTooltipDisabled={!isCollapsed || menuOpen}
           onContextMenu={handleContextMenu}
+          isCollapsed={isCollapsed}
         />
       </View>
 

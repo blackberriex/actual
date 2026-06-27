@@ -32,7 +32,7 @@ export function BudgetName({ children }: BudgetNameProps) {
     <View
       style={{
         paddingTop: 35,
-        height: 30,
+        height: 40,
         flexDirection: 'row',
         alignItems: 'center',
         margin: '0 8px 16px 20px',
@@ -127,8 +127,9 @@ function EditableBudgetName() {
         variant="bare"
         style={{
           color: theme.sidebarBudgetName,
-          fontSize: 13,
-          fontWeight: 600,
+          fontSize: 22,
+          fontWeight: 800,
+          letterSpacing: '-0.02em',
           marginLeft: -5,
           flex: '0 auto',
           fontFamily: 'var(--font-family-display)',
@@ -141,11 +142,6 @@ function EditableBudgetName() {
         <Text style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
           {budgetName || t('Unnamed')}
         </Text>
-        <SvgExpandArrow
-          width={7}
-          height={7}
-          style={{ flexShrink: 0, marginLeft: 5 }}
-        />
       </Button>
 
       <Popover

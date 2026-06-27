@@ -109,10 +109,13 @@ const _getActiveStyles = (
 ): CSSProperties => {
   switch (variant) {
     case 'bare':
-      return { backgroundColor: theme.buttonBareBackgroundActive };
+      return {
+        backgroundColor: theme.buttonBareBackgroundActive,
+        transform: bounce ? 'scale(0.97)' : undefined,
+      };
     default:
       return {
-        transform: bounce ? 'translateY(1px)' : undefined,
+        transform: bounce ? 'scale(0.97)' : undefined,
         boxShadow: `0 1px 4px 0 ${
           variant === 'primary'
             ? theme.buttonPrimaryShadow
@@ -148,11 +151,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           margin: 0,
           overflow: 'hidden',
           display: 'flex',
-          borderRadius: 6,
+          borderRadius: 8,
           backgroundColor: backgroundColor[variantWithDisabled],
           border: _getBorder(variant, variantWithDisabled),
           color: textColor[variantWithDisabled],
-          transition: 'box-shadow .25s',
+          transition:
+            'background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease',
           WebkitAppRegion: 'no-drag',
           ...styles.smallText,
           '&[data-hovered]': _getHoveredStyles(variant),

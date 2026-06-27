@@ -92,10 +92,16 @@ export function ExpenseGroup({
   return (
     <Row
       collapsed
+      height={44}
       style={{
         fontWeight: 600,
         opacity: group.hidden ? 0.33 : undefined,
-        backgroundColor: theme.budgetHeaderCurrentMonth, //use budget colors
+        backgroundColor: theme.budgetHeaderCurrentMonth,
+        transition: 'background-color 150ms ease',
+        marginTop: 12,
+        ':hover': {
+          backgroundColor: theme.tableRowBackgroundHover,
+        },
       }}
     >
       {dragState && !dragState.preview && dragState.type === 'group' && (

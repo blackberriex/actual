@@ -83,7 +83,7 @@ export function Accounts() {
       <View
         style={{
           height: 1,
-          backgroundColor: 'rgba(255, 255, 255, 0.08)',
+          backgroundColor: theme.sidebarBorder,
           margin: '12px 16px 8px 16px',
           flexShrink: 0,
         }}
@@ -105,7 +105,7 @@ export function Accounts() {
             <View
               style={{
                 height: 1,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                backgroundColor: theme.sidebarBorder,
                 margin: '14px 16px 8px 16px',
                 flexShrink: 0,
               }}
@@ -146,7 +146,7 @@ export function Accounts() {
             <View
               style={{
                 height: 1,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                backgroundColor: theme.sidebarBorder,
                 margin: '14px 16px 8px 16px',
                 flexShrink: 0,
               }}
@@ -187,7 +187,7 @@ export function Accounts() {
             <View
               style={{
                 height: 1,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                backgroundColor: theme.sidebarBorder,
                 margin: '14px 16px 8px 16px',
                 flexShrink: 0,
               }}

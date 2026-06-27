@@ -66,14 +66,11 @@ export function BudgetSummary({ month }: BudgetSummaryProps) {
             ? theme.budgetCurrentMonth
             : theme.budgetOtherMonth,
         border: '1px solid ' + theme.cardBorder,
-        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-        borderRadius: 12,
-        marginLeft: 0,
-        marginRight: 0,
-        marginTop: 5,
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
+        borderRadius: 20,
+        margin: '5px 4px',
         flex: 1,
         cursor: 'default',
-        marginBottom: 5,
         overflow: 'hidden',
         '& .hover-visible': {
           opacity: 0,
@@ -87,15 +84,15 @@ export function BudgetSummary({ month }: BudgetSummaryProps) {
       <SheetNameProvider name={monthUtils.sheetForMonth(month)}>
         <View
           style={{
-            padding: '0 13px',
-            ...(collapsed ? { margin: '10px 0' } : { marginTop: 16 }),
+            padding: collapsed ? '12px 24px' : '24px 24px 24px 24px',
+            ...(collapsed ? { margin: '0' } : { marginTop: 4 }),
           }}
         >
           <View
             style={{
               position: 'absolute',
-              left: 10,
-              top: 0,
+              left: 14,
+              top: collapsed ? 8 : 16,
             }}
           >
             <Button
@@ -118,13 +115,18 @@ export function BudgetSummary({ month }: BudgetSummaryProps) {
           </View>
 
           <div
-            className={css({
-              textAlign: 'center',
-              marginTop: 3,
-              fontSize: 18,
-              fontWeight: 500,
-              textDecorationSkip: 'ink',
-            })}
+            className={css([
+              {
+                textAlign: 'center',
+                marginTop: 0,
+                fontSize: 22,
+                fontWeight: 500,
+                fontFamily: 'var(--font-family-display)',
+                letterSpacing: '-0.02em',
+                textDecorationSkip: 'ink',
+              },
+              currentMonth === month && { fontWeight: 600 },
+            ])}
           >
             {monthUtils.format(month, 'MMMM', locale)}
           </div>

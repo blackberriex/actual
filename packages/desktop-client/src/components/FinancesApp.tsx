@@ -201,7 +201,7 @@ export function FinancesApp() {
       <View
         style={{
           flexDirection: 'row',
-          backgroundColor: theme.pageBackground,
+          backgroundColor: theme.appBackground,
           flex: 1,
         }}
       >

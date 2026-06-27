@@ -130,7 +130,7 @@ export const styles: CSSProperties = {
   },
   tooltip: {
     padding: 5,
-    ...shadowLarge,
+    boxShadow: theme.popoverShadow || '0 10px 30px rgba(0, 0, 0, 0.15)',
     borderWidth: 1,
     borderRadius: 8,
     borderStyle: 'solid',

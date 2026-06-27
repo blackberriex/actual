@@ -68,6 +68,7 @@ export function SecondaryItem({
     <View style={{ flexShrink: 0, ...style }}>
       <ItemContent
         style={{
+          display: 'block',
           ...accountNameStyle,
           color: theme.sidebarItemText,
           paddingLeft: 12 + indent,
@@ -78,6 +79,10 @@ export function SecondaryItem({
           ':hover': {
             backgroundColor: theme.sidebarItemBackgroundHover,
             color: theme.sidebarItemTextHighlight,
+          },
+          '&.active': {
+            backgroundColor: theme.sidebarItemBackgroundSelected,
+            color: theme.sidebarItemTextSelected,
           },
         }}
         to={to}

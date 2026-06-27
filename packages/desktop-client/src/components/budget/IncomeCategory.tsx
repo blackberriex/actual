@@ -2,6 +2,7 @@
 import React from 'react';
 import type { ComponentProps } from 'react';
 
+import { theme } from '@actual-app/components/theme';
 import type { CategoryEntity } from '@actual-app/core/types/models';
 
 import { DropHighlight, useDraggable, useDroppable } from '#components/sort';
@@ -61,8 +62,14 @@ export function IncomeCategory({
     <Row
       innerRef={dropRef}
       collapsed
+      height={38}
       style={{
         opacity: cat.hidden ? 0.5 : undefined,
+        backgroundColor: theme.budgetCurrentMonth,
+        transition: 'background-color 150ms ease',
+        ':hover': {
+          backgroundColor: theme.tableRowBackgroundHover,
+        },
       }}
     >
       <DropHighlight pos={dropPos} offset={{ top: 1 }} />

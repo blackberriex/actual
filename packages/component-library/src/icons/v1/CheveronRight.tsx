@@ -4,15 +4,17 @@ export const SvgCheveronRight = (props: SVGProps<SVGSVGElement>) => (
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 20 20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
     style={{
       color: 'inherit',
       ...props.style,
     }}
   >
-    <path
-      d="m12.95 10.707.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657z"
-      fill="currentColor"
-    />
+    <path d="m9 18 6-6-6-6" />
   </svg>
 );

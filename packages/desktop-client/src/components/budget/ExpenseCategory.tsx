@@ -78,9 +78,14 @@ export function ExpenseCategory({
     <Row
       innerRef={dropRef}
       collapsed
+      height={38}
       style={{
         backgroundColor: theme.budgetCurrentMonth,
         opacity: cat.hidden || categoryGroup?.hidden ? 0.5 : undefined,
+        transition: 'background-color 150ms ease',
+        ':hover': {
+          backgroundColor: theme.tableRowBackgroundHover,
+        },
       }}
     >
       <DropHighlight pos={dropPos} offset={{ top: 1 }} />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +9,7 @@ import { styles } from '@actual-app/components/styles';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 import * as Platform from '@actual-app/core/shared/platform';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 import { Resizable } from 're-resizable';
 
 import { FeatureErrorFallback } from '#components/FeatureErrorFallback';
@@ -53,18 +53,22 @@ export function Sidebar() {
     setSidebarWidthLocalPref(sidebarWidth);
   };
 
-  const onAddAccount = () => {
-    dispatch(replaceModal({ modal: { name: 'add-account', options: {} } }));
-  };
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const containerRef = useResizeObserver<HTMLDivElement>(rect => {
-    setSidebarWidth(rect.width);
+  useResizeObserver(containerRef, () => {
+    if (containerRef.current) {
+      setSidebarWidth(containerRef.current.clientWidth);
+    }
   });
 
+  function onAddAccount() {
+    dispatch(replaceModal({ modal: { name: 'add-account', options: {} } }));
+  }
+
   return (
-    <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
+    <ErrorBoundary fallback={<FeatureErrorFallback />}>
       <Resizable
-        defaultSize={{
+        size={{
           width: sidebarWidth,
           height: '100%',
         }}
@@ -84,22 +88,27 @@ export function Sidebar() {
       >
         <View
           innerRef={containerRef}
-          className={css({
-            color: theme.sidebarItemText,
-            height: '100%',
-            backgroundColor: theme.sidebarBackground,
-            '& .float': {
-              opacity: isFloating ? 1 : 0,
-              transition: 'opacity .25s, width .25s',
-              width: hasWindowButtons || isFloating ? null : 0,
-            } as CSSProperties,
-            '&:hover .float': {
-              opacity: 1,
-              width: hasWindowButtons ? null : 'auto',
-            } as CSSProperties,
-            flex: 1,
-            ...styles.darkScrollbar,
-          })}
+          className={cx(
+            'sidebar',
+            css({
+              color: theme.sidebarItemText,
+              height: '100%',
+              backgroundColor: theme.sidebarBackground,
+              borderRight: '1px solid ' + theme.sidebarBorder,
+              boxShadow: '1px 0 8px rgba(0, 0, 0, 0.04)',
+              '& .float': {
+                opacity: isFloating ? 1 : 0,
+                transition: 'opacity .25s, width .25s',
+                width: hasWindowButtons || isFloating ? null : 0,
+              } as CSSProperties,
+              '&:hover .float': {
+                opacity: 1,
+                width: hasWindowButtons ? null : 'auto',
+              } as CSSProperties,
+              flex: 1,
+              ...styles.darkScrollbar,
+            })
+          )}
         >
           <BudgetName />
 

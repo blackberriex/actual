@@ -125,15 +125,21 @@ const InternalLink = ({
   activeStyle,
   children,
   isDisabled,
-  isExactPathMatch = false,
 }: InternalLinkProps) => {
   const path = to ?? '';
-  const match = useMatch({ path, end: isExactPathMatch });
+  const inlineActiveStyle = activeStyle
+    ? {
+        backgroundColor: activeStyle.backgroundColor,
+        color: activeStyle.color,
+        fontWeight: activeStyle.fontWeight,
+      }
+    : undefined;
 
   return (
     <NavLink
       to={path}
-      className={css([styles.smallText, style, match ? activeStyle : null])}
+      className={css([styles.smallText, style])}
+      style={({ isActive }) => (isActive ? inlineActiveStyle : undefined)}
       onClick={e => {
         if (isDisabled) {
           e.preventDefault();

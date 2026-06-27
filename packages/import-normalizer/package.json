@@ -2,9 +2,9 @@
   "name": "@actual-app/import-normalizer",
   "version": "1.0.0",
   "description": "Bank statement CSV importer and payee/category normalizer",
-  "main": "index.js",
   "license": "MIT",
   "type": "commonjs",
+  "main": "index.js",
   "dependencies": {
     "@actual-app/api": "workspace:*",
     "csv-parse": "^6.2.1",

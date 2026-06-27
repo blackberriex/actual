@@ -27,19 +27,19 @@ function parseArgs() {
 // Helper to detect CSV headers and parse rows
 function parseCSV(filePath) {
   let fileContent = fs.readFileSync(filePath, 'utf-8');
-  
+
   // Skip metadata headers if present (common in bank statements)
   const lines = fileContent.split(/\r?\n/);
   let headerLineIndex = -1;
   const searchPatterns = [/дата/i, /date/i, /опис/i, /description/i];
-  
+
   for (let i = 0; i < lines.length; i++) {
     if (searchPatterns.some(p => p.test(lines[i]))) {
       headerLineIndex = i;
       break;
     }
   }
-  
+
   if (headerLineIndex > 0) {
     console.log(`[CSV] Skipped ${headerLineIndex} metadata header lines.`);
     fileContent = lines.slice(headerLineIndex).join('\n');
@@ -68,8 +68,21 @@ function parseCSV(filePath) {
   };
 
   const datePatterns = [/date/i, /дата/i, /time/i, /час/i];
-  const amountPatterns = [/amount/i, /сума/i, /value/i, /сума \(грн\.\)/i, /card amount/i];
-  const payeePatterns = [/description/i, /опис/i, /payee/i, /опис операції/i, /raw payee/i, /контрагент/i];
+  const amountPatterns = [
+    /amount/i,
+    /сума/i,
+    /value/i,
+    /сума \(грн\.\)/i,
+    /card amount/i,
+  ];
+  const payeePatterns = [
+    /description/i,
+    /опис/i,
+    /payee/i,
+    /опис операції/i,
+    /raw payee/i,
+    /контрагент/i,
+  ];
   const cardPatterns = [/картка/i, /card/i, /номер/i];
 
   // Detect Date
@@ -83,10 +96,14 @@ function parseCSV(filePath) {
 
   if (!columnMap.date || !columnMap.amount || !columnMap.payee) {
     console.error('Available keys:', keys);
-    throw new Error(`Failed to auto-detect columns. Detected: Date(${columnMap.date}), Amount(${columnMap.amount}), Payee(${columnMap.payee})`);
+    throw new Error(
+      `Failed to auto-detect columns. Detected: Date(${columnMap.date}), Amount(${columnMap.amount}), Payee(${columnMap.payee})`,
+    );
   }
 
-  console.log(`[Auto-detect] Mapped CSV headers: Date -> "${columnMap.date}", Amount -> "${columnMap.amount}", Description -> "${columnMap.payee}"${columnMap.card ? `, Card -> "${columnMap.card}"` : ''}`);
+  console.log(
+    `[Auto-detect] Mapped CSV headers: Date -> "${columnMap.date}", Amount -> "${columnMap.amount}", Description -> "${columnMap.payee}"${columnMap.card ? `, Card -> "${columnMap.card}"` : ''}`,
+  );
 
   return records.map(row => {
     let rawAmount = row[columnMap.amount];
@@ -111,15 +128,30 @@ function cleanDescription(desc) {
   let clean = desc.trim();
 
   // 1. Remove prefixes like EPC*, MCC*, CARD MATCHING, etc.
-  clean = clean.replace(/^(EPC\*|MCC\*|PRVT\*|CARD\*|CARD MATCHING\*|Покупка:|Оплата:|Переказ:)\s*/i, '');
+  clean = clean.replace(
+    /^(EPC\*|MCC\*|PRVT\*|CARD\*|CARD MATCHING\*|Покупка:|Оплата:|Переказ:)\s*/i,
+    '',
+  );
 
   // 2. Remove trailing address blocks like ", Platz 10, Root D4", ", Dnipro UA", etc.
-  clean = clean.replace(/,\s*(?:Platz\s+\d+|St|Street|Ave|Avenue|Rd|Road|Term|POS)?\s*[^,]+,\s*[^,]+$/i, '');
-  clean = clean.replace(/,\s*[^,]+(?:\s+UA|\s+US|\s+DE|\s+CH|\s+Kyiv|\s+Kiev|\s+Lviv|\s+Odessa|\s+Dnipro)$/gi, '');
-  clean = clean.replace(/,\s*(?:Kyiv|Kiev|Lviv|Odessa|Kharkiv|Dnipro|UA|US|DE|CH)\b.*$/gi, '');
+  clean = clean.replace(
+    /,\s*(?:Platz\s+\d+|St|Street|Ave|Avenue|Rd|Road|Term|POS)?\s*[^,]+,\s*[^,]+$/i,
+    '',
+  );
+  clean = clean.replace(
+    /,\s*[^,]+(?:\s+UA|\s+US|\s+DE|\s+CH|\s+Kyiv|\s+Kiev|\s+Lviv|\s+Odessa|\s+Dnipro)$/gi,
+    '',
+  );
+  clean = clean.replace(
+    /,\s*(?:Kyiv|Kiev|Lviv|Odessa|Kharkiv|Dnipro|UA|US|DE|CH)\b.*$/gi,
+    '',
+  );
 
   // 3. Remove single words that represent cities/countries at the end
-  clean = clean.replace(/\b(Kyiv|Kiev|Lviv|Odessa|Kharkiv|Dnipro|UA|US|DE|CH)\b.*$/gi, '');
+  clean = clean.replace(
+    /\b(Kyiv|Kiev|Lviv|Odessa|Kharkiv|Dnipro|UA|US|DE|CH)\b.*$/gi,
+    '',
+  );
 
   // 4. Remove terminal codes or transaction codes
   clean = clean.replace(/\b(Terminal|Term|ID|POS)\s*[0-9A-Z]+/gi, '');
@@ -136,7 +168,9 @@ async function main() {
   const args = parseArgs();
 
   if (!args.file) {
-    console.error('Usage: node normalize.js --file <path-to-csv> [--out <output-normalized-csv>] [--account <account-name>] [--budget <budget-name>] [--server <server-url>] [--password <sync-password>] [--dry-run]');
+    console.error(
+      'Usage: node normalize.js --file <path-to-csv> [--out <output-normalized-csv>] [--account <account-name>] [--budget <budget-name>] [--server <server-url>] [--password <sync-password>] [--dry-run]',
+    );
     process.exit(1);
   }
 
@@ -160,7 +194,9 @@ async function main() {
 
   // Parse and normalize CSV rows
   const rawTransactions = parseCSV(csvFile);
-  console.log(`[CSV] Parsed ${rawTransactions.length} transactions from statement.`);
+  console.log(
+    `[CSV] Parsed ${rawTransactions.length} transactions from statement.`,
+  );
 
   // Determine Mode: Offline (file output) or Online (push to Actual Server)
   const password = args.password || process.env.ACTUAL_SERVER_PASSWORD;
@@ -168,20 +204,27 @@ async function main() {
 
   let categories = [];
   let payees = [];
-  let learnedMappings = new Map();
+  const learnedMappings = new Map();
   let account = null;
   let allExistingTransactions = [];
 
   if (isOffline) {
-    console.log(`[Mode] Running in OFFLINE mode. Transactions will be saved as normalized CSV.`);
+    console.log(
+      `[Mode] Running in OFFLINE mode. Transactions will be saved as normalized CSV.`,
+    );
   } else {
     console.log(`[Mode] Running in ONLINE mode. Connecting to Actual API.`);
-    const serverURL = args.server || process.env.ACTUAL_SERVER_URL || 'https://vault.tailcbd54c.ts.net';
+    const serverURL =
+      args.server ||
+      process.env.ACTUAL_SERVER_URL ||
+      'https://vault.tailcbd54c.ts.net';
     const budgetName = args.budget || process.env.ACTUAL_BUDGET_NAME;
     const accountName = args.account;
 
     if (!accountName) {
-      console.error('Error: Account name (--account) is required for online import.');
+      console.error(
+        'Error: Account name (--account) is required for online import.',
+      );
       process.exit(1);
     }
 
@@ -190,7 +233,9 @@ async function main() {
       const budgets = await api.getBudgets();
       let targetBudget = budgets[0];
       if (budgetName) {
-        targetBudget = budgets.find(b => b.name === budgetName || b.id === budgetName);
+        targetBudget = budgets.find(
+          b => b.name === budgetName || b.id === budgetName,
+        );
       }
       if (!targetBudget) {
         throw new Error('No budgets found or target budget not matched.');
@@ -200,15 +245,21 @@ async function main() {
 
       categories = await api.getCategories();
       payees = await api.getPayees();
-      
+
       const accounts = await api.getAccounts();
-      account = accounts.find(a => a.name === accountName || a.id === accountName);
+      account = accounts.find(
+        a => a.name === accountName || a.id === accountName,
+      );
       if (!account) {
         throw new Error(`Account "${accountName}" not found.`);
       }
 
       console.log('[API] Querying transaction history for learning loop...');
-      allExistingTransactions = await api.getTransactions(account.id, '2020-01-01', '2030-12-31');
+      allExistingTransactions = await api.getTransactions(
+        account.id,
+        '2020-01-01',
+        '2030-12-31',
+      );
       for (const tx of allExistingTransactions) {
         if (tx.imported_payee && tx.payee && tx.category) {
           const payeeObj = payees.find(p => p.id === tx.payee);
@@ -223,9 +274,13 @@ async function main() {
           }
         }
       }
-      console.log(`[Learning Loop] Loaded ${learnedMappings.size} learned patterns.`);
+      console.log(
+        `[Learning Loop] Loaded ${learnedMappings.size} learned patterns.`,
+      );
     } catch (e) {
-      console.error(`[API Error] Failed to initialize connection: ${e.message}. Falling back to offline mode.`);
+      console.error(
+        `[API Error] Failed to initialize connection: ${e.message}. Falling back to offline mode.`,
+      );
     }
   }
 
@@ -238,7 +293,7 @@ async function main() {
   for (const tx of rawTransactions) {
     const rawDesc = tx.rawDescription;
     const cleanedPayee = cleanDescription(rawDesc);
-    
+
     let finalPayeeName = cleanedPayee;
     let finalCategoryName = '';
     let finalCategoryId = null;
@@ -248,9 +303,10 @@ async function main() {
     // Extract card last 4 digits
     const cardMatch = tx.card.match(/(\d{4})$/);
     const cardDigits = cardMatch ? cardMatch[1] : '';
-    const resolvedAccount = (cardDigits && config.cards && config.cards[cardDigits]) 
-      ? config.cards[cardDigits] 
-      : (accountName || 'Privat UAH');
+    const resolvedAccount =
+      cardDigits && config.cards && config.cards[cardDigits]
+        ? config.cards[cardDigits]
+        : accountName || 'Privat UAH';
 
     // 0. Detect transfers between own accounts
     let isTransfer = false;
@@ -261,7 +317,10 @@ async function main() {
         const match = rawDesc.match(regex);
         if (match) {
           const targetCardDigits = match[1];
-          const destAccount = (config.cards && config.cards[targetCardDigits]) ? config.cards[targetCardDigits] : null;
+          const destAccount =
+            config.cards && config.cards[targetCardDigits]
+              ? config.cards[targetCardDigits]
+              : null;
           if (destAccount) {
             isTransfer = true;
             transferAccount = destAccount;
@@ -282,7 +341,7 @@ async function main() {
         finalCategoryId = learned.categoryId;
         finalPayeeId = learned.payeeId;
         mappingSource = 'Learned';
-      } 
+      }
       // 2. Check rules.yaml configuration
       else {
         const matchingRule = config.rules.find(r => {
@@ -307,18 +366,24 @@ async function main() {
     // Resolve category/payee IDs if online
     if (!isOffline) {
       if (isTransfer && transferAccount) {
-        const destAccountObj = accounts.find(a => a.name === transferAccount || a.id === transferAccount);
+        const destAccountObj = accounts.find(
+          a => a.name === transferAccount || a.id === transferAccount,
+        );
         if (destAccountObj) {
           finalPayeeId = `transfer:${destAccountObj.id}`;
         }
       }
 
       if (finalCategoryName && !finalCategoryId) {
-        const matchedCat = categories.find(c => c.name.toLowerCase() === finalCategoryName.toLowerCase());
+        const matchedCat = categories.find(
+          c => c.name.toLowerCase() === finalCategoryName.toLowerCase(),
+        );
         if (matchedCat) finalCategoryId = matchedCat.id;
       }
       if (finalPayeeName && !finalPayeeId) {
-        const matchedPayee = payees.find(p => p.name.toLowerCase() === finalPayeeName.toLowerCase());
+        const matchedPayee = payees.find(
+          p => p.name.toLowerCase() === finalPayeeName.toLowerCase(),
+        );
         if (matchedPayee) finalPayeeId = matchedPayee.id;
       }
     }
@@ -337,7 +402,9 @@ async function main() {
     // If online, use resolved targetAccount to import into
     let finalAccountId = account ? account.id : null;
     if (!isOffline && accountName) {
-      const routedAccount = accounts.find(a => a.name === resolvedAccount || a.id === resolvedAccount);
+      const routedAccount = accounts.find(
+        a => a.name === resolvedAccount || a.id === resolvedAccount,
+      );
       if (routedAccount) {
         finalAccountId = routedAccount.id;
       }
@@ -365,16 +432,30 @@ async function main() {
       notes: rawDesc,
     });
 
-    console.log(`➔ ${tx.date} | ${tx.amount.toFixed(2)} | "${rawDesc.slice(0, 30)}"`);
-    console.log(`  └ Payee: "${finalPayeeName}" | Category: "${finalCategoryName || 'Uncategorized'}" | Source: ${mappingSource}`);
+    console.log(
+      `➔ ${tx.date} | ${tx.amount.toFixed(2)} | "${rawDesc.slice(0, 30)}"`,
+    );
+    console.log(
+      `  └ Payee: "${finalPayeeName}" | Category: "${finalCategoryName || 'Uncategorized'}" | Source: ${mappingSource}`,
+    );
 
     if (isOffline) {
       if (!finalCategoryName) {
-        unmatchedLog.push({ date: tx.date, amount: tx.amount, raw: rawDesc, cleaned: cleanedPayee });
+        unmatchedLog.push({
+          date: tx.date,
+          amount: tx.amount,
+          raw: rawDesc,
+          cleaned: cleanedPayee,
+        });
       }
     } else {
       if (!finalCategoryId) {
-        unmatchedLog.push({ date: tx.date, amount: tx.amount, raw: rawDesc, cleaned: cleanedPayee });
+        unmatchedLog.push({
+          date: tx.date,
+          amount: tx.amount,
+          raw: rawDesc,
+          cleaned: cleanedPayee,
+        });
       }
     }
   }
@@ -383,20 +464,37 @@ async function main() {
 
   // Handle Unmatched transactions report
   if (unmatchedLog.length > 0) {
-    const unmatchedCsvFile = path.resolve(path.dirname(csvFile), 'unmatched.csv');
+    const unmatchedCsvFile = path.resolve(
+      path.dirname(csvFile),
+      'unmatched.csv',
+    );
     const csvHeader = 'date,amount,raw_description,cleaned_description\n';
-    const csvRows = unmatchedLog.map(x => `"${x.date}","${x.amount}","${x.raw.replace(/"/g, '""')}","${x.cleaned.replace(/"/g, '""')}"`).join('\n');
+    const csvRows = unmatchedLog
+      .map(
+        x =>
+          `"${x.date}","${x.amount}","${x.raw.replace(/"/g, '""')}","${x.cleaned.replace(/"/g, '""')}"`,
+      )
+      .join('\n');
     fs.writeFileSync(unmatchedCsvFile, csvHeader + csvRows, 'utf-8');
-    console.log(`[Unmatched] Saved ${unmatchedLog.length} uncategorized transactions to: ${unmatchedCsvFile}`);
+    console.log(
+      `[Unmatched] Saved ${unmatchedLog.length} uncategorized transactions to: ${unmatchedCsvFile}`,
+    );
   }
 
   // Handle Normalized CSV output file
   if (args.out) {
     const normalizedCsvFile = path.resolve(args.out);
     const csvHeader = 'Account,Date,Payee,Category,Amount,Notes\n';
-    const csvRows = csvOutputRows.map(x => `"${x.account}","${x.date}","${x.payee.replace(/"/g, '""')}","${x.category.replace(/"/g, '""')}","${x.amount.toFixed(2)}","${x.notes.replace(/"/g, '""')}"`).join('\n');
+    const csvRows = csvOutputRows
+      .map(
+        x =>
+          `"${x.account}","${x.date}","${x.payee.replace(/"/g, '""')}","${x.category.replace(/"/g, '""')}","${x.amount.toFixed(2)}","${x.notes.replace(/"/g, '""')}"`,
+      )
+      .join('\n');
     fs.writeFileSync(normalizedCsvFile, csvHeader + csvRows, 'utf-8');
-    console.log(`[Output] Successfully wrote normalized CSV file to: ${normalizedCsvFile}`);
+    console.log(
+      `[Output] Successfully wrote normalized CSV file to: ${normalizedCsvFile}`,
+    );
   }
 
   // Online API Push
@@ -405,23 +503,31 @@ async function main() {
       console.log(`[Dry-Run] Simulation complete. Did not push to server.`);
       await api.shutdown();
     } else {
-      console.log(`[Import] Syncing and pushing ${normalizedToImport.length} transactions to Actual...`);
+      console.log(
+        `[Import] Syncing and pushing ${normalizedToImport.length} transactions to Actual...`,
+      );
       const existingTxSet = new Set(
-        allExistingTransactions.map(t => `${t.date}_${t.amount}_${t.imported_payee}`)
+        allExistingTransactions.map(
+          t => `${t.date}_${t.amount}_${t.imported_payee}`,
+        ),
       );
 
       const filteredToImport = normalizedToImport.filter(t => {
         const key = `${t.date}_${t.amount}_${t.imported_payee}`;
         const isDuplicate = existingTxSet.has(key);
         if (isDuplicate) {
-          console.log(`  [Skip Duplicate] ${t.date} | ${(t.amount / 100).toFixed(2)} | "${t.imported_payee}"`);
+          console.log(
+            `  [Skip Duplicate] ${t.date} | ${(t.amount / 100).toFixed(2)} | "${t.imported_payee}"`,
+          );
         }
         return !isDuplicate;
       });
 
       if (filteredToImport.length > 0) {
         await api.addTransactions(account.id, filteredToImport);
-        console.log(`[Import] Success! Imported ${filteredToImport.length} new transactions.`);
+        console.log(
+          `[Import] Success! Imported ${filteredToImport.length} new transactions.`,
+        );
       } else {
         console.log('[Import] No new transactions to import.');
       }

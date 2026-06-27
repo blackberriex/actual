@@ -2,9 +2,20 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { ComponentProps } from 'react';
 import { Popover as ReactAriaPopover } from 'react-aria-components';
 
-import { css } from '@emotion/css';
+import { css, keyframes } from '@emotion/css';
 
 import { styles } from './styles';
+
+const popoverEnter = keyframes({
+  from: {
+    opacity: 0,
+    transform: 'scale(0.96) translateY(-4px)',
+  },
+  to: {
+    opacity: 1,
+    transform: 'scale(1) translateY(0)',
+  },
+});
 
 type PopoverProps = ComponentProps<typeof ReactAriaPopover>;
 
@@ -44,6 +55,7 @@ export const Popover = ({
         ...styles.lightScrollbar,
         padding: 0,
         userSelect: 'none',
+        animation: `${popoverEnter} 140ms cubic-bezier(0.16, 1, 0.3, 1) forwards`,
         ...style,
       })}
       shouldCloseOnInteractOutside={element => {

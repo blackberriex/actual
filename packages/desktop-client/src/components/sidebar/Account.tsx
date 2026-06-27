@@ -39,6 +39,7 @@ import { useDispatch } from '#redux';
 import type { Binding, SheetFields } from '#spreadsheet';
 
 export const accountNameStyle: CSSProperties = {
+  display: 'block',
   marginTop: 1,
   marginBottom: 1,
   paddingTop: 5,
@@ -49,6 +50,7 @@ export const accountNameStyle: CSSProperties = {
   borderRadius: 6,
   textDecoration: 'none',
   color: theme.sidebarItemText,
+  transition: 'background-color 150ms ease, color 150ms ease',
   ':hover': {
     backgroundColor: theme.sidebarItemBackgroundHover,
     color: theme.sidebarItemTextHighlight,

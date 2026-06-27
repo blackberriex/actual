@@ -52,25 +52,25 @@ export function Item({
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        height: 18,
+        height: 20,
       }}
     >
       <View
         style={{
-          width: 16,
-          height: 16,
+          width: 20,
+          height: 20,
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
         }}
       >
         <Icon
-          width={14}
-          height={14}
+          width={20}
+          height={20}
           style={iconColor ? { color: iconColor } : undefined}
         />
       </View>
-      <Block style={{ marginLeft: 8 }}>{title}</Block>
+      <Block style={{ marginLeft: 12, fontSize: 13 }}>{title}</Block>
       <View style={{ flex: 1 }} />
     </View>
   );
@@ -79,24 +79,30 @@ export function Item({
     <View style={{ flexShrink: 0, ...style }}>
       <ItemContent
         style={{
+          display: 'block',
           ...styles.smallText,
-          paddingTop: 5,
-          paddingBottom: 5,
+          paddingTop: 10,
+          paddingBottom: 10,
           paddingLeft: 12 + indent,
           paddingRight: 8,
           margin: '2px 8px',
-          borderRadius: 6,
+          borderRadius: 12,
           textDecoration: 'none',
           color: theme.sidebarItemText,
+          transition: 'background-color 150ms ease, color 150ms ease',
           ...(forceHover ? hoverStyle : {}),
           ':hover': hoverStyle,
+          '&.active': {
+            backgroundColor: theme.sidebarItemBackgroundSelected,
+            color: theme.sidebarItemTextSelected,
+          },
         }}
         forceActive={forceActive}
         activeStyle={{
-          backgroundColor: theme.sidebarItemAccentSelected,
+          backgroundColor: theme.sidebarItemBackgroundSelected,
           color: theme.sidebarItemTextSelected,
           ':hover': {
-            backgroundColor: theme.sidebarItemAccentSelected,
+            backgroundColor: theme.sidebarItemBackgroundSelected,
             color: theme.sidebarItemTextSelected,
           },
         }}
