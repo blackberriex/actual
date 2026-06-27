@@ -62,7 +62,7 @@ export function IncomeCategory({
     <Row
       innerRef={dropRef}
       collapsed
-      height={38}
+      height={32}
       style={{
         opacity: cat.hidden ? 0.5 : undefined,
         backgroundColor: theme.budgetCurrentMonth,

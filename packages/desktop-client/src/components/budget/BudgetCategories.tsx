@@ -253,6 +253,7 @@ export const BudgetCategories = memo<BudgetCategoriesProps>(
               content = (
                 <Row
                   style={{ backgroundColor: theme.budgetHeaderCurrentMonth }}
+                  height={36}
                 >
                   <SidebarGroup
                     group={{ id: 'new', name: '' }}
@@ -267,7 +268,7 @@ export const BudgetCategories = memo<BudgetCategoriesProps>(
               break;
             case 'new-category':
               content = (
-                <Row>
+                <Row height={32}>
                   <SidebarCategory
                     innerRef={null}
                     category={{

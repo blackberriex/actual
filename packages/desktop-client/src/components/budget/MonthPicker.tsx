@@ -18,6 +18,7 @@ import * as monthUtils from '@actual-app/core/shared/months';
 
 import { Link } from '#components/common/Link';
 import { useLocale } from '#hooks/useLocale';
+import { useResizeObserver } from '#hooks/useResizeObserver';
 
 import type { MonthBounds } from './MonthsContext';
 
@@ -50,12 +51,24 @@ export const MonthPicker = ({
 
   const currentYear = parseInt(monthUtils.getYear(startMonth));
 
-  const size = 'big';
+  const [size, setSize] = useState('small');
+  const containerRef = useResizeObserver(rect => {
+    // If the available width is narrow (e.g. when showing 1 month), set to 'small'
+    setSize(rect.width <= 680 ? 'small' : 'big');
+  });
 
-  // Dynamically build the list of months to render (always all 12 months)
+  // Dynamically build the list of months to render
   const monthsToRender: string[] = [];
-  for (let i = 1; i <= 12; i++) {
-    monthsToRender.push(`${currentYear}-${String(i).padStart(2, '0')}`);
+  if (size === 'small') {
+    // Render 5 months centered around the start selection to fit narrow screen space
+    for (let i = -2; i <= 2; i++) {
+      monthsToRender.push(monthUtils.addMonths(firstSelectedMonth, i));
+    }
+  } else {
+    // Render all 12 months of the currently active year
+    for (let i = 1; i <= 12; i++) {
+      monthsToRender.push(`${currentYear}-${String(i).padStart(2, '0')}`);
+    }
   }
 
   const yearTriggerRef = useRef<HTMLButtonElement>(null);
@@ -83,12 +96,12 @@ export const MonthPicker = ({
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        flex: 1,
+        justifyContent: 'space-between',
         ...style,
       }}
     >
       <View
+        innerRef={containerRef}
         style={{
           flexDirection: 'row',
           flex: 1,

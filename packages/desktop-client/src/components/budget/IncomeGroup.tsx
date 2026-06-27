@@ -39,12 +39,12 @@ export function IncomeGroup({
   return (
     <Row
       collapsed
-      height={44}
+      height={36}
       style={{
         fontWeight: 600,
         backgroundColor: theme.budgetHeaderCurrentMonth,
         transition: 'background-color 150ms ease',
-        marginTop: 12,
+        marginTop: 8,
         ':hover': {
           backgroundColor: theme.tableRowBackgroundHover,
         },
