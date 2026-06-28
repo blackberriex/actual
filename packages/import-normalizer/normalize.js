@@ -65,6 +65,7 @@ function parseCSV(filePath) {
     amount: null,
     payee: null,
     card: null,
+    commission: null,
   };
 
   const datePatterns = [/date/i, /дата/i, /time/i, /час/i];
@@ -84,6 +85,7 @@ function parseCSV(filePath) {
     /контрагент/i,
   ];
   const cardPatterns = [/картка/i, /card/i, /номер/i];
+  const commissionPatterns = [/commission/i, /комісія/i];
 
   // Detect Date
   columnMap.date = keys.find(k => datePatterns.some(p => p.test(k)));
@@ -93,6 +95,8 @@ function parseCSV(filePath) {
   columnMap.payee = keys.find(k => payeePatterns.some(p => p.test(k)));
   // Detect Card
   columnMap.card = keys.find(k => cardPatterns.some(p => p.test(k)));
+  // Detect Commission
+  columnMap.commission = keys.find(k => commissionPatterns.some(p => p.test(k)));
 
   if (!columnMap.date || !columnMap.amount || !columnMap.payee) {
     console.error('Available keys:', keys);
@@ -102,7 +106,7 @@ function parseCSV(filePath) {
   }
 
   console.log(
-    `[Auto-detect] Mapped CSV headers: Date -> "${columnMap.date}", Amount -> "${columnMap.amount}", Description -> "${columnMap.payee}"${columnMap.card ? `, Card -> "${columnMap.card}"` : ''}`,
+    `[Auto-detect] Mapped CSV headers: Date -> "${columnMap.date}", Amount -> "${columnMap.amount}", Description -> "${columnMap.payee}"${columnMap.card ? `, Card -> "${columnMap.card}"` : ''}${columnMap.commission ? `, Commission -> "${columnMap.commission}"` : ''}`,
   );
 
   return records.map(row => {
@@ -111,7 +115,19 @@ function parseCSV(filePath) {
     if (typeof rawAmount === 'string') {
       rawAmount = rawAmount.replace(/\s/g, '').replace(/,/g, '.');
     }
-    const amountFloat = parseFloat(rawAmount);
+    let amountFloat = parseFloat(rawAmount);
+
+    // If commission is present, subtract it from the net amount
+    if (columnMap.commission && row[columnMap.commission]) {
+      let rawComm = row[columnMap.commission].trim();
+      if (rawComm && rawComm !== '—' && rawComm !== '-') {
+        rawComm = rawComm.replace(/\s/g, '').replace(/,/g, '.');
+        const commFloat = parseFloat(rawComm);
+        if (!isNaN(commFloat)) {
+          amountFloat -= Math.abs(commFloat);
+        }
+      }
+    }
 
     return {
       date: row[columnMap.date],
