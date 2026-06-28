@@ -142,8 +142,8 @@ const csp = [
   "default-src 'self' blob:",
   "img-src 'self' blob: data:",
   `script-src ${scriptSrc}`,
-  "style-src 'self' 'unsafe-inline'",
-  "font-src 'self' data:",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
   `connect-src ${connectSrc}`,
 ].join('; ');
 
