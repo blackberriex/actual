@@ -17,6 +17,11 @@ COPY packages/eslint-plugin-actual/package.json packages/eslint-plugin-actual/pa
 COPY packages/loot-core/package.json packages/loot-core/package.json
 COPY packages/sync-server/package.json packages/sync-server/package.json
 COPY packages/plugins-service/package.json packages/plugins-service/package.json
+COPY packages/ci-actions/package.json packages/ci-actions/package.json
+COPY packages/cli/package.json packages/cli/package.json
+COPY packages/docs/package.json packages/docs/package.json
+COPY packages/import-normalizer/package.json packages/import-normalizer/package.json
+COPY packages/vite-plugin-peggy/package.json packages/vite-plugin-peggy/package.json
 
 COPY ./bin/package-browser ./bin/package-browser
 
