@@ -1366,6 +1366,7 @@ const Transaction = memo(function Transaction({
           }),
           ...(_unmatched && { opacity: 0.5 }),
           ...(isBeingDragged && { opacity: 0.5 }),
+          ...(reconciled && { opacity: 0.5 }),
         }}
         onContextMenu={handleContextMenu}
       >
