@@ -182,6 +182,7 @@ function cleanDescription(desc) {
 
 async function main() {
   const args = parseArgs();
+  const accountName = args.account;
 
   if (!args.file) {
     console.error(
@@ -235,7 +236,6 @@ async function main() {
       process.env.ACTUAL_SERVER_URL ||
       'https://vault.tailcbd54c.ts.net';
     const budgetName = args.budget || process.env.ACTUAL_BUDGET_NAME;
-    const accountName = args.account;
 
     if (!accountName) {
       console.error(
