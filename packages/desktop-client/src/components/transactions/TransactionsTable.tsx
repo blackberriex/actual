@@ -1185,9 +1185,7 @@ const Transaction = memo(function Transaction({
   const isBudgetTransfer = transferAcct && transferAcct.offbudget === 0;
   const isOffBudget = account && account.offbudget === 1;
 
-  const valueStyle = added
-    ? { fontWeight: 600, color: theme.tableTextItemAdded }
-    : null;
+  const valueStyle = null;
   const backgroundFocus = focusedField === 'select';
   const amountStyle = hideFraction ? { letterSpacing: -0.5 } : null;
 
@@ -1366,7 +1364,6 @@ const Transaction = memo(function Transaction({
           }),
           ...(_unmatched && { opacity: 0.5 }),
           ...(isBeingDragged && { opacity: 0.5 }),
-          ...(reconciled && { opacity: 0.5 }),
         }}
         onContextMenu={handleContextMenu}
       >
