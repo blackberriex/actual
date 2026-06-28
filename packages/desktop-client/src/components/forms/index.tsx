@@ -117,13 +117,18 @@ export const Checkbox = (props: CheckboxProps) => {
             backgroundColor: theme.checkboxBackgroundSelected,
             '::after': {
               display: 'block',
-              background:
-                theme.checkboxBackgroundSelected +
-                ' url(\'data:image/svg+xml; utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="white" d="M0 11l2-2 5 5L18 3l2 2L7 18z"/></svg>\') 9px 9px',
+              content: '" "',
               width: 9,
               height: 9,
-
-              content: '" "',
+              backgroundColor: theme.checkboxToggleBackgroundSelected,
+              WebkitMaskImage: 'url(\'data:image/svg+xml; utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M3 10l4 4 10-10"/></svg>\')',
+              maskImage: 'url(\'data:image/svg+xml; utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M3 10l4 4 10-10"/></svg>\')',
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain',
+              WebkitMaskPosition: 'center',
+              maskPosition: 'center',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
             },
           },
           ':disabled': {

@@ -49,7 +49,7 @@
   --color-tableRowHeaderText: #161617;
 
   /* ===== Numbers ===== */
-  --color-numberPositive: #a3de41;
+  --color-numberPositive: #73b900;
   --color-numberNegative: #e13f4d;
   --color-numberNeutral: #8a8a93;
   --color-budgetNumberNegative: var(--color-numberNegative);
@@ -58,7 +58,7 @@
   --color-budgetNumberPositive: var(--color-numberPositive);
   --color-templateNumberFunded: var(--color-numberPositive);
   --color-templateNumberUnderFunded: #e13f4d;
-  --color-toBudgetPositive: #a3de41;
+  --color-toBudgetPositive: #73b900;
   --color-toBudgetZero: var(--color-numberNeutral);
   --color-toBudgetNegative: var(--color-budgetNumberNegative);
 
@@ -223,7 +223,7 @@
   --color-checkboxBorderSelected: #161617;
   --color-checkboxShadowSelected: transparent;
   --color-checkboxToggleBackground: #d6d6db;
-  --color-checkboxToggleBackgroundSelected: #161617;
+  --color-checkboxToggleBackgroundSelected: #ffffff;
   --color-checkboxToggleDisabled: #f1f1f3;
 
   /* ===== Pills ===== */

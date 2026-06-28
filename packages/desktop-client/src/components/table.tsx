@@ -668,7 +668,9 @@ export function SelectCell({
             border: selected
               ? '1px solid ' + theme.checkboxBorderSelected
               : '1px solid ' + theme.formInputBorder,
-            color: theme.checkboxText,
+            color: selected
+              ? theme.checkboxToggleBackgroundSelected
+              : theme.checkboxText,
             backgroundColor: selected
               ? theme.checkboxBackgroundSelected
               : theme.tableBackground,
