@@ -455,7 +455,10 @@ function HeaderCell({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     color: theme.tableHeaderText,
-    fontWeight: 300,
+    fontSize: 10,
+    fontWeight: 600,
+    textTransform: 'uppercase' as CSSProperties['textTransform'],
+    letterSpacing: '0.05em',
     marginLeft,
     marginRight,
   };
@@ -1177,6 +1180,14 @@ const Transaction = memo(function Transaction({
     (payees && payeeId && getPayeesById(payees)[payeeId]) || undefined;
   const account = accounts && accountId && getAccountsById(accounts)[accountId];
 
+  const isRecurring = Boolean(
+    transaction.schedule ||
+    (payee?.name && payee.name.toLowerCase().includes('recurring')) ||
+    (notes && notes.toLowerCase().includes('recurring')) ||
+    (categoryId && categoryGroups && getCategoriesById(categoryGroups)[categoryId]?.name.toLowerCase().includes('підписк')) ||
+    (categoryId && categoryGroups && getCategoriesById(categoryGroups)[categoryId]?.name.toLowerCase().includes('кредит'))
+  );
+
   const isChild = transaction.is_child;
   const transferAcct =
     isTemporaryId(id) && payee?.transfer_acct
@@ -1340,11 +1351,15 @@ const Transaction = memo(function Transaction({
             ? theme.tableRowBackgroundHighlight
             : backgroundFocus
               ? theme.tableRowBackgroundHover
-              : index % 2 === 0
-                ? theme.tableBackground
-                : theme.tableRowBackgroundAlternate,
+              : isRecurring
+                ? 'rgba(147, 51, 234, 0.05)'
+                : index % 2 === 0
+                  ? theme.tableBackground
+                  : theme.tableRowBackgroundAlternate,
           ':hover': !(backgroundFocus || selected) && {
-            backgroundColor: theme.tableRowBackgroundHover,
+            backgroundColor: isRecurring
+              ? 'rgba(147, 51, 234, 0.1)'
+              : theme.tableRowBackgroundHover,
           },
           '& .hover-visible': {
             opacity: 0,
@@ -1489,9 +1504,12 @@ const Transaction = memo(function Transaction({
             textAlign="flex"
             exposed={focusedField === 'date'}
             value={date}
-            valueStyle={valueStyle}
+            valueStyle={{
+              color: theme.pageTextSubdued,
+              ...valueStyle,
+            }}
             formatter={date =>
-              date ? formatDate(parseISO(date), dateFormat) : ''
+              date ? formatDate(parseISO(date), 'dd MMM yyyy') : ''
             }
             onExpose={name => !isPreview && onEdit(id, name)}
             onUpdate={value => {
@@ -1533,7 +1551,10 @@ const Transaction = memo(function Transaction({
               }
               return '';
             }}
-            valueStyle={valueStyle}
+            valueStyle={{
+              color: theme.pageTextSubdued,
+              ...valueStyle,
+            }}
             exposed={focusedField === 'account'}
             onExpose={name => !isPreview && onEdit(id, name)}
             onUpdate={async value => {
@@ -1594,7 +1615,11 @@ const Transaction = memo(function Transaction({
           note={notes ?? ''}
           scheduleNote={isPreview ? schedule?.name : null}
           focused={focusedField === 'notes'}
-          valueStyle={valueStyle}
+          valueStyle={{
+            fontStyle: 'italic',
+            color: theme.pageTextSubdued,
+            ...valueStyle,
+          }}
           onClickTag={onNotesTagClick}
           onUpdate={value => {
             onUpdate('notes', value?.trim());
@@ -1733,13 +1758,22 @@ const Transaction = memo(function Transaction({
             width="flex"
             textAlign="flex"
             value={categoryId}
-            formatter={value =>
-              value
+            formatter={value => {
+              const name = value
                 ? (getCategoriesById(categoryGroups)[value]?.name ?? '')
                 : transaction.id
                   ? t('Categorize')
-                  : ''
-            }
+                  : '';
+              if (isRecurring && value) {
+                return (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <span>{name}</span>
+                    <SvgArrowsSynchronize style={{ width: 11, height: 11, color: '#a855f7' }} />
+                  </View>
+                );
+              }
+              return name;
+            }}
             exposed={focusedField === 'category'}
             onExpose={name => !isPreview && onEdit(id, name)}
             valueStyle={
@@ -1750,7 +1784,11 @@ const Transaction = memo(function Transaction({
                     fontWeight: 300,
                     color: theme.formInputTextHighlight,
                   }
-                : valueStyle
+                : {
+                    fontWeight: 600,
+                    color: theme.tableRowHeaderText,
+                    ...valueStyle,
+                  }
             }
             onUpdate={async value => {
               if (value === 'split') {
