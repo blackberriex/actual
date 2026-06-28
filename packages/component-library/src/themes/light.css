@@ -5,11 +5,11 @@
     'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* ===== Page ===== */
-  --color-appBackground: #f1f1f3;
-  --color-pageBackground: #fcfcfd;
-  --color-pageBackgroundModalActive: #fcfcfd;
-  --color-pageBackgroundTopLeft: #fcfcfd;
-  --color-pageBackgroundBottomRight: #fcfcfd;
+  --color-appBackground: #ededed;
+  --color-pageBackground: #ededed;
+  --color-pageBackgroundModalActive: #ededed;
+  --color-pageBackgroundTopLeft: #ededed;
+  --color-pageBackgroundBottomRight: #ededed;
   --color-pageBackgroundLineTop: #e2e2e6;
   --color-pageBackgroundLineMid: #e2e2e6;
   --color-pageBackgroundLineBottom: #e2e2e6;
@@ -70,7 +70,7 @@
   --color-sidebarItemBackgroundFailed: #d83a45;
   --color-sidebarItemAccentSelected: #fcfcfd;
   --color-sidebarItemBackgroundHover: #e9e9ec;
-  --color-sidebarItemBackgroundSelected: rgba(0, 0, 0, 0.08);
+  --color-sidebarItemBackgroundSelected: rgba(0, 0, 0, 0.05);
   --color-sidebarItemText: #6b6b74;
   --color-sidebarItemTextHighlight: #161617;
   --color-sidebarItemTextUpdated: #161617;
@@ -258,9 +258,9 @@
 
   /* ===== Budget ===== */
   --color-budgetOtherMonth: #fafafa;
-  --color-budgetCurrentMonth: #ffffff;
+  --color-budgetCurrentMonth: #f8f8fa;
   --color-budgetHeaderOtherMonth: #fafafa;
-  --color-budgetHeaderCurrentMonth: #f1f1f3;
+  --color-budgetHeaderCurrentMonth: #ebebec;
 
   /* ===== Floating action bar / Tooltip ===== */
   --color-floatingActionBarBackground: #161617;
