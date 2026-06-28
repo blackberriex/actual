@@ -292,25 +292,14 @@ const TransactionHeader = memo(
           />
         )}
         <HeaderCell
-          value={t('Payment')}
+          value={t('Amount')}
           width={100}
           alignItems="flex-end"
           marginRight={-5}
-          id="payment"
-          icon={field === 'payment' ? ascDesc : 'clickable'}
+          id="amount"
+          icon={field === 'amount' ? ascDesc : 'clickable'}
           onClick={() =>
-            onSort('payment', selectAscDesc(field, ascDesc, 'payment', 'asc'))
-          }
-        />
-        <HeaderCell
-          value={t('Deposit')}
-          width={100}
-          alignItems="flex-end"
-          marginRight={-5}
-          id="deposit"
-          icon={field === 'deposit' ? ascDesc : 'clickable'}
-          onClick={() =>
-            onSort('deposit', selectAscDesc(field, ascDesc, 'deposit', 'desc'))
+            onSort('amount', selectAscDesc(field, ascDesc, 'amount', 'desc'))
           }
         />
         {showBalance && (
@@ -1831,20 +1820,27 @@ const Transaction = memo(function Transaction({
         )}
 
         <InputCell
-          /* Debit field for all transactions */
+          /* Combined Amount field for all transactions */
           type="input"
           width={100}
-          name="debit"
-          exposed={focusedField === 'debit'}
-          focused={focusedField === 'debit'}
-          value={debit === '' && credit === '' ? amountToCurrency(0) : debit}
-          formatter={value =>
-            // reformat value so since we might have kept decimals
-            value ? amountToCurrency(currencyToAmount(value) || 0) : ''
+          name="amount"
+          exposed={focusedField === 'amount'}
+          focused={focusedField === 'amount'}
+          value={
+            debit === '' && credit === ''
+              ? amountToCurrency(0)
+              : debit !== ''
+                ? `-${debit}`
+                : `+${credit}`
           }
-          valueStyle={valueStyle}
+          formatter={value => value}
+          valueStyle={
+            credit !== '' && credit !== '0.00'
+              ? { color: theme.numberPositive, fontWeight: 600 }
+              : valueStyle
+          }
           textAlign="right"
-          title={debit}
+          title={debit !== '' ? `-${debit}` : `+${credit}`}
           onExpose={name => !isPreview && onEdit(id, name)}
           style={{
             ...(isParent && { fontStyle: 'italic' }),
@@ -1852,39 +1848,24 @@ const Transaction = memo(function Transaction({
             ...amountStyle,
           }}
           inputProps={{
-            value: debit === '' && credit === '' ? amountToCurrency(0) : debit,
-            onUpdate: onUpdate.bind(null, 'debit'),
-            'data-1p-ignore': true,
-          }}
-          privacyFilter={{
-            activationFilters: [!isTemporaryId(transaction.id)],
-          }}
-        />
-
-        <InputCell
-          /* Credit field for all transactions */
-          type="input"
-          width={100}
-          name="credit"
-          exposed={focusedField === 'credit'}
-          focused={focusedField === 'credit'}
-          value={credit}
-          formatter={value =>
-            // reformat value so since we might have kept decimals
-            value ? amountToCurrency(currencyToAmount(value) || 0) : ''
-          }
-          valueStyle={valueStyle}
-          textAlign="right"
-          title={credit}
-          onExpose={name => !isPreview && onEdit(id, name)}
-          style={{
-            ...(isParent && { fontStyle: 'italic' }),
-            ...styles.tnum,
-            ...amountStyle,
-          }}
-          inputProps={{
-            value: credit,
-            onUpdate: onUpdate.bind(null, 'credit'),
+            value:
+              debit === '' && credit === ''
+                ? amountToCurrency(0)
+                : debit !== ''
+                  ? `-${debit}`
+                  : `+${credit}`,
+            onUpdate: value => {
+              const cleanValue = value.trim();
+              if (cleanValue === '') {
+                onUpdate('debit', '');
+              } else if (cleanValue.startsWith('-')) {
+                onUpdate('debit', cleanValue.substring(1));
+              } else if (cleanValue.startsWith('+')) {
+                onUpdate('credit', cleanValue.substring(1));
+              } else {
+                onUpdate('debit', cleanValue);
+              }
+            },
             'data-1p-ignore': true,
           }}
           privacyFilter={{
@@ -3040,8 +3021,7 @@ export const TransactionTable = forwardRef(
         'payee',
         'notes',
         'category',
-        'debit',
-        'credit',
+        'amount',
         'cleared',
         'cancel',
         'add',
@@ -3058,8 +3038,7 @@ export const TransactionTable = forwardRef(
         'payee',
         'notes',
         'category',
-        'debit',
-        'credit',
+        'amount',
         'cleared',
       ];
 
@@ -3068,7 +3047,7 @@ export const TransactionTable = forwardRef(
 
     function getFields(item: TransactionEntity | undefined, fields: string[]) {
       fields = item?.is_child
-        ? ['select', 'payee', 'notes', 'category', 'debit', 'credit']
+        ? ['select', 'payee', 'notes', 'category', 'amount']
         : fields.filter(
             f =>
               (props.showAccount || f !== 'account') &&
@@ -3313,11 +3292,11 @@ export const TransactionTable = forwardRef(
           );
           setNewTransactions(data);
 
-          // Jump next to "debit" field if it is empty
+          // Jump next to "amount" field if it is empty
           // Otherwise jump to the same field as before, but downwards
           // to the added split transaction
           if (newTrans[0].amount === null) {
-            newNavigator.onEdit(newTrans[0].id, 'debit');
+            newNavigator.onEdit(newTrans[0].id, 'amount');
           } else {
             newNavigator.onEdit(
               diff.added[0].id,
@@ -3335,7 +3314,7 @@ export const TransactionTable = forwardRef(
 
           const { tableNavigator } = latestState.current;
           if (trans.amount === null) {
-            tableNavigator.onEdit(trans.id, 'debit');
+            tableNavigator.onEdit(trans.id, 'amount');
           } else {
             tableNavigator.onEdit(newId, tableNavigator.focusedField);
           }
