@@ -173,7 +173,7 @@ export function Account<FieldName extends SheetFields<'account'>>({
   }, [usdTransactions]);
 
   useEffect(() => {
-    if (!isUsdAccount || !account?.id || !usdTransactions || usdTransactions.length === 0) {
+    if (!isUsdAccount || !account?.id || !usdTransactions || usdTransactions.length === 0 || usdBalance === 0) {
       return;
     }
 
