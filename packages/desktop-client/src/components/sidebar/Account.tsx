@@ -1,7 +1,9 @@
 // @ts-strict-ignore
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { useQuery } from '#hooks/useQuery';
 
 import { AlignedText } from '@actual-app/components/aligned-text';
 import { Button } from '@actual-app/components/button';
@@ -139,7 +141,98 @@ export function Account<FieldName extends SheetFields<'account'>>({
   const reopenAccount = useReopenAccountMutation();
   const updateAccount = useUpdateAccountMutation();
 
-  const balanceCell = <CellValue binding={query} type="financial" />;
+  const isUsdAccount = account?.name?.toLowerCase().includes('usd');
+
+  const { data: usdTransactions } = useQuery<{ id: string; notes: string; amount: number; payee: string; date: string }>(
+    () => {
+      if (!isUsdAccount || !account?.id) {
+        return null;
+      }
+      return q('transactions')
+        .filter({ account: account.id })
+        .select(['id', 'notes', 'amount', 'payee', 'date']);
+    },
+    [isUsdAccount, account?.id],
+  );
+
+  const usdBalance = useMemo(() => {
+    if (!usdTransactions) return 0;
+    return usdTransactions.reduce((sum, tx) => {
+      if (tx.payee === 'Курсова переоцінка' || tx.notes?.includes('Автоматична курсова переоцінка')) {
+        return sum;
+      }
+      const notes = tx.notes || '';
+      const match = notes.match(/\[Original:\s*(-?\d+(?:\.\d+)?)\s*USD\]/i) ||
+                    notes.match(/\[USD:\s*(-?\d+(?:\.\d+)?)\]/i) ||
+                    notes.match(/(-?\d+(?:\.\d+)?)\s*USD/i);
+      const usdVal = match ? parseFloat(match[1]) : 0;
+      return sum + usdVal;
+    }, 0);
+  }, [usdTransactions]);
+
+  useEffect(() => {
+    if (!isUsdAccount || !account?.id || !usdTransactions || usdTransactions.length === 0) {
+      return;
+    }
+
+    const todayStr = currentDay();
+    const hasRevalToday = usdTransactions.some(
+      tx => tx.date === todayStr && tx.notes === 'Автоматична курсова переоцінка'
+    );
+
+    if (hasRevalToday) {
+      return;
+    }
+
+    let isCancelled = false;
+    async function runReval() {
+      try {
+        const response = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=USD&json');
+        if (!response.ok) return;
+        const data = await response.json();
+        const rateInfo = data?.[0];
+        const rate = rateInfo?.rate;
+        if (!rate || isCancelled) return;
+
+        const currentUahCents = usdTransactions.reduce((sum, tx) => sum + tx.amount, 0);
+        const expectedUahCents = Math.round(usdBalance * rate * 100);
+        const diffCents = expectedUahCents - currentUahCents;
+
+        if (Math.abs(diffCents) >= 1) {
+          await send('transactions-batch-update', {
+            added: [
+              {
+                account: account.id,
+                date: todayStr,
+                amount: diffCents,
+                notes: 'Автоматична курсова переоцінка',
+                payee_name: 'Курсова переоцінка',
+              }
+            ]
+          });
+        }
+      } catch (e) {
+        console.error('Failed to run exchange rate revaluation:', e);
+      }
+    }
+
+    const timer = setTimeout(runReval, 3000);
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [isUsdAccount, account?.id, usdTransactions, usdBalance]);
+
+  const balanceCell = (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <CellValue binding={query} type="financial" />
+      {isUsdAccount && (
+        <span style={{ opacity: 0.6, fontSize: '0.9em', marginLeft: 2 }}>
+          /{usdBalance.toFixed(2).replace(/\.00$/, '')}$
+        </span>
+      )}
+    </View>
+  );
 
   const accountRow = (
     <View
