@@ -4,6 +4,8 @@ import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useQuery } from '#hooks/useQuery';
+import { q } from '@actual-app/core/shared/query';
+import { currentDay } from '@actual-app/core/shared/months';
 
 import { AlignedText } from '@actual-app/components/aligned-text';
 import { Button } from '@actual-app/components/button';
