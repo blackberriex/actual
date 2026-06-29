@@ -126,8 +126,8 @@ function CategoryList({
         style={{
           overflowY: 'auto',
           willChange: 'transform',
-          padding: '5px 0',
-          ...(!embedded && { maxHeight: 175 }),
+          padding: 4,
+          ...(!embedded && { maxHeight: 250 }),
         }}
       >
         {splitTransaction &&
@@ -333,7 +333,8 @@ function SplitTransactionButton({
         backgroundColor: highlighted
           ? theme.menuAutoCompleteBackgroundHover
           : 'transparent',
-        borderRadius: embedded ? 4 : 0,
+        borderRadius: 4,
+        margin: '2px 0',
         flexShrink: 0,
         flexDirection: 'row',
         alignItems: 'center',
@@ -422,9 +423,10 @@ function CategoryItem({
           color: highlighted
             ? theme.menuAutoCompleteItemTextHover
             : theme.menuAutoCompleteItemText,
-          padding: 4,
+          padding: '6px 8px',
           paddingLeft: 20,
-          borderRadius: embedded ? 4 : 0,
+          borderRadius: 4,
+          margin: '1px 0',
           border: 'none',
           font: 'inherit',
           ...narrowStyle,

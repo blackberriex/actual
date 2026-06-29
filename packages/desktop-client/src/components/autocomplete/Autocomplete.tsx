@@ -639,7 +639,7 @@ function SingleAutocomplete<T extends AutocompleteItem>({
                 <Popover
                   triggerRef={triggerRef}
                   placement="bottom start"
-                  offset={2}
+                  offset={4}
                   isOpen={isOpen}
                   onOpenChange={close}
                   isNonModal
@@ -648,7 +648,10 @@ function SingleAutocomplete<T extends AutocompleteItem>({
                     ...styles.popover,
                     backgroundColor: theme.menuAutoCompleteBackground,
                     color: theme.menuAutoCompleteText,
-                    minWidth: 200,
+                    border: '1px solid ' + theme.menuBorder,
+                    borderRadius: 8,
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.3)',
+                    minWidth: 280,
                     width: triggerRef.current?.clientWidth,
                   }}
                   data-testid="autocomplete"

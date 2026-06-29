@@ -1772,7 +1772,7 @@ const Transaction = memo(function Transaction({
                     color: theme.formInputTextHighlight,
                   }
                 : {
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: theme.tableRowHeaderText,
                     ...valueStyle,
                   }
