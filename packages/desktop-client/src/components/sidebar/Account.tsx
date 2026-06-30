@@ -241,8 +241,14 @@ export function Account<FieldName extends SheetFields<'account'>>({
   const rawBalanceValue = useSheetValue(query);
   const uahBalanceValue = typeof rawBalanceValue === 'number' ? rawBalanceValue / 100 : 0;
 
-  const isUahActiveAccount = !titleAccount && account && !account.closed && !isUsdAccount;
-  const estimatedUsd = isUahActiveAccount && nbuUsdRate
+  const showUahUsdEstimate =
+    (to === '/accounts' ||
+      to === '/accounts/onbudget' ||
+      to === '/accounts/offbudget' ||
+      (account && !account.closed)) &&
+    !isUsdAccount;
+
+  const estimatedUsd = showUahUsdEstimate && nbuUsdRate
     ? Math.round(uahBalanceValue / parseFloat(nbuUsdRate))
     : null;
 
@@ -254,7 +260,7 @@ export function Account<FieldName extends SheetFields<'account'>>({
           /{usdBalance.toFixed(2).replace(/\.00$/, '')}$
         </span>
       )}
-      {isUahActiveAccount && estimatedUsd !== null && (
+      {showUahUsdEstimate && estimatedUsd !== null && (
         <span style={{ opacity: 0.6, fontSize: '0.9em', marginLeft: 2 }}>
           /{estimatedUsd.toLocaleString()}$
         </span>
