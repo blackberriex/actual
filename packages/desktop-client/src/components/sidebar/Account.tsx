@@ -39,6 +39,7 @@ import { useDragRef } from '#hooks/useDragRef';
 import { useIsTestEnv } from '#hooks/useIsTestEnv';
 import { useNotes } from '#hooks/useNotes';
 import { useSyncedPref } from '#hooks/useSyncedPref';
+import { useSheetValue } from '#hooks/useSheetValue';
 import { openAccountCloseModal } from '#modals/modalsSlice';
 import { useDispatch } from '#redux';
 import type { Binding, SheetFields } from '#spreadsheet';
@@ -182,12 +183,19 @@ export function Account<FieldName extends SheetFields<'account'>>({
     }, 0);
   }, [usdTransactions, revalPayeeId]);
 
+  const [nbuUsdRate] = useSyncedPref('nbu_usd_rate');
+  const [nbuUsdRateDate] = useSyncedPref('nbu_usd_rate_date');
+
   useEffect(() => {
     if (!isUsdAccount || !account?.id || !usdTransactions || usdTransactions.length === 0 || usdBalance === 0 || !payees) {
       return;
     }
 
     const todayStr = currentDay();
+    if (nbuUsdRateDate !== todayStr || !nbuUsdRate) {
+      return;
+    }
+
     const hasRevalToday = usdTransactions.some(
       tx => tx.date === todayStr && tx.notes === 'Автоматична курсова переоцінка'
     );
@@ -196,16 +204,9 @@ export function Account<FieldName extends SheetFields<'account'>>({
       return;
     }
 
-    let isCancelled = false;
     async function runReval() {
       try {
-        const response = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=USD&json');
-        if (!response.ok) return;
-        const data = await response.json();
-        const rateInfo = data?.[0];
-        const rate = rateInfo?.rate;
-        if (!rate || isCancelled) return;
-
+        const rate = parseFloat(nbuUsdRate);
         const currentUahCents = usdTransactions.reduce((sum, tx) => sum + tx.amount, 0);
         const expectedUahCents = Math.round(usdBalance * rate * 100);
         const diffCents = expectedUahCents - currentUahCents;
@@ -234,11 +235,16 @@ export function Account<FieldName extends SheetFields<'account'>>({
     }
 
     const timer = setTimeout(runReval, 3000);
-    return () => {
-      isCancelled = true;
-      clearTimeout(timer);
-    };
-  }, [isUsdAccount, account?.id, usdTransactions, usdBalance, payees, revalPayeeId]);
+    return () => clearTimeout(timer);
+  }, [isUsdAccount, account?.id, usdTransactions, usdBalance, payees, revalPayeeId, nbuUsdRate, nbuUsdRateDate]);
+
+  const rawBalanceValue = useSheetValue(query);
+  const uahBalanceValue = typeof rawBalanceValue === 'number' ? rawBalanceValue / 100 : 0;
+
+  const isUahActiveAccount = !titleAccount && account && !account.closed && !isUsdAccount;
+  const estimatedUsd = isUahActiveAccount && nbuUsdRate
+    ? Math.round(uahBalanceValue / parseFloat(nbuUsdRate))
+    : null;
 
   const balanceCell = (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -246,6 +252,11 @@ export function Account<FieldName extends SheetFields<'account'>>({
       {isUsdAccount && (
         <span style={{ opacity: 0.6, fontSize: '0.9em', marginLeft: 2 }}>
           /{usdBalance.toFixed(2).replace(/\.00$/, '')}$
+        </span>
+      )}
+      {isUahActiveAccount && estimatedUsd !== null && (
+        <span style={{ opacity: 0.6, fontSize: '0.9em', marginLeft: 2 }}>
+          /{estimatedUsd.toLocaleString()}$
         </span>
       )}
     </View>

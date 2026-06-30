@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { useSyncedPref } from '#hooks/useSyncedPref';
+import { currentDay } from '@actual-app/core/shared/months';
 
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
@@ -36,6 +39,34 @@ export function Accounts() {
   const [showClosedAccounts, setShowClosedAccountsPref] = useLocalPref(
     'ui.showClosedAccounts',
   );
+
+  const [nbuUsdRateDate, setNbuUsdRateDate] = useSyncedPref('nbu_usd_rate_date');
+  const [, setNbuUsdRate] = useSyncedPref('nbu_usd_rate');
+
+  useEffect(() => {
+    const todayStr = currentDay();
+    if (nbuUsdRateDate === todayStr) {
+      return;
+    }
+
+    async function fetchRate() {
+      try {
+        const response = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=USD&json');
+        if (!response.ok) return;
+        const data = await response.json();
+        const rate = data?.[0]?.rate;
+        if (rate) {
+          setNbuUsdRate(String(rate));
+          setNbuUsdRateDate(todayStr);
+        }
+      } catch (e) {
+        console.error('Failed to fetch NBU exchange rate in sidebar:', e);
+      }
+    }
+
+    const timer = setTimeout(fetchRate, 2000);
+    return () => clearTimeout(timer);
+  }, [nbuUsdRateDate, setNbuUsdRate, setNbuUsdRateDate]);
 
   function onDragChange(drag: { state: string }) {
     setIsDragging(drag.state === 'start');
