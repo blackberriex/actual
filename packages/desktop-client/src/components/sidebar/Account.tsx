@@ -146,18 +146,8 @@ export function Account<FieldName extends SheetFields<'account'>>({
   const updateAccount = useUpdateAccountMutation();
 
   const isUsdAccount = account?.name?.toLowerCase().includes('usd');
-
-  const { data: usdTransactions } = useQuery<{ id: string; notes: string; amount: number; payee: string; date: string }>(
-    () => {
-      if (!isUsdAccount || !account?.id) {
-        return null;
-      }
-      return q('transactions')
-        .filter({ account: account.id })
-        .select(['id', 'notes', 'amount', 'payee', 'date']);
-    },
-    [isUsdAccount, account?.id],
-  );
+  const [nbuUsdRate] = useSyncedPref('nbu_usd_rate');
+  const [nbuUsdRateDate] = useSyncedPref('nbu_usd_rate_date');
 
   const { data: payees } = useQuery<{ id: string; name: string }>(
     () => q('payees').select(['id', 'name']),
@@ -168,79 +158,6 @@ export function Account<FieldName extends SheetFields<'account'>>({
     return payees?.find(p => p.name === 'Курсова переоцінка')?.id;
   }, [payees]);
 
-  const usdBalance = useMemo(() => {
-    if (!usdTransactions) return 0;
-    return usdTransactions.reduce((sum, tx) => {
-      if (tx.payee === revalPayeeId || tx.notes?.includes('Автоматична курсова переоцінка')) {
-        return sum;
-      }
-      const notes = tx.notes || '';
-      const match = notes.match(/\[Original:\s*(-?\d+(?:\.\d+)?)\s*USD\]/i) ||
-                    notes.match(/\[USD:\s*(-?\d+(?:\.\d+)?)\]/i) ||
-                    notes.match(/(-?\d+(?:\.\d+)?)\s*USD/i);
-      const usdVal = match ? parseFloat(match[1]) : 0;
-      return sum + usdVal;
-    }, 0);
-  }, [usdTransactions, revalPayeeId]);
-
-  const [nbuUsdRate] = useSyncedPref('nbu_usd_rate');
-  const [nbuUsdRateDate] = useSyncedPref('nbu_usd_rate_date');
-
-  useEffect(() => {
-    if (!isUsdAccount || !account?.id || !usdTransactions || usdTransactions.length === 0 || usdBalance === 0 || !payees) {
-      return;
-    }
-
-    const todayStr = currentDay();
-    if (nbuUsdRateDate !== todayStr || !nbuUsdRate) {
-      return;
-    }
-
-    const hasRevalToday = usdTransactions.some(
-      tx => tx.date === todayStr && tx.notes === 'Автоматична курсова переоцінка'
-    );
-
-    if (hasRevalToday) {
-      return;
-    }
-
-    async function runReval() {
-      try {
-        const rate = parseFloat(nbuUsdRate);
-        const currentUahCents = usdTransactions.reduce((sum, tx) => sum + tx.amount, 0);
-        const expectedUahCents = Math.round(usdBalance * rate * 100);
-        const diffCents = expectedUahCents - currentUahCents;
-
-        if (Math.abs(diffCents) >= 1) {
-          let payeeId = revalPayeeId;
-          if (!payeeId) {
-            payeeId = await send('payee-create', { name: 'Курсова переоцінка' });
-          }
-
-          await send('transactions-batch-update', {
-            added: [
-              {
-                account: account.id,
-                date: todayStr,
-                amount: diffCents,
-                notes: 'Автоматична курсова переоцінка',
-                payee: payeeId,
-              }
-            ]
-          });
-        }
-      } catch (e) {
-        console.error('Failed to run exchange rate revaluation:', e);
-      }
-    }
-
-    const timer = setTimeout(runReval, 3000);
-    return () => clearTimeout(timer);
-  }, [isUsdAccount, account?.id, usdTransactions, usdBalance, payees, revalPayeeId, nbuUsdRate, nbuUsdRateDate]);
-
-  const rawBalanceValue = useSheetValue(query);
-  const uahBalanceValue = typeof rawBalanceValue === 'number' ? rawBalanceValue / 100 : 0;
-
   const showUahUsdEstimate =
     (to === '/accounts' ||
       to === '/accounts/onbudget' ||
@@ -248,22 +165,20 @@ export function Account<FieldName extends SheetFields<'account'>>({
       (account && !account.closed)) &&
     !isUsdAccount;
 
-  const estimatedUsd = showUahUsdEstimate && nbuUsdRate
-    ? Math.round(uahBalanceValue / parseFloat(nbuUsdRate))
-    : null;
-
   const balanceCell = (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
       <CellValue binding={query} type="financial" />
       {isUsdAccount && (
-        <span style={{ opacity: 0.6, fontSize: '0.9em', marginLeft: 2 }}>
-          /{usdBalance.toFixed(2).replace(/\.00$/, '')}$
-        </span>
+        <USDAccountRevaluer
+          account={account}
+          revalPayeeId={revalPayeeId}
+          nbuUsdRate={nbuUsdRate}
+          nbuUsdRateDate={nbuUsdRateDate}
+          payees={payees}
+        />
       )}
-      {showUahUsdEstimate && estimatedUsd !== null && (
-        <span style={{ opacity: 0.6, fontSize: '0.9em', marginLeft: 2 }}>
-          /{estimatedUsd.toLocaleString()}$
-        </span>
+      {showUahUsdEstimate && nbuUsdRate && (
+        <EstimatedUSDBalance query={query} rate={nbuUsdRate} />
       )}
     </View>
   );
@@ -524,5 +439,113 @@ export function Account<FieldName extends SheetFields<'account'>>({
     >
       {accountRow}
     </Tooltip>
+  );
+}
+
+function EstimatedUSDBalance({ query, rate }: { query: any; rate: string }) {
+  const rawBalance = useSheetValue(query);
+  if (typeof rawBalance !== 'number') return null;
+  const usd = Math.round((rawBalance / 100) / parseFloat(rate));
+  return (
+    <span style={{ opacity: 0.6, fontSize: '0.9em', marginLeft: 2 }}>
+      /{usd.toLocaleString()}$
+    </span>
+  );
+}
+
+function USDAccountRevaluer({
+  account,
+  revalPayeeId,
+  nbuUsdRate,
+  nbuUsdRateDate,
+  payees,
+}: {
+  account: AccountEntity;
+  revalPayeeId: string;
+  nbuUsdRate: string;
+  nbuUsdRateDate: string;
+  payees: any[];
+}) {
+  const { data: usdTransactions } = useQuery<{ id: string; notes: string; amount: number; payee: string; date: string }>(
+    () => {
+      if (!account?.id) return null;
+      return q('transactions')
+        .filter({ account: account.id })
+        .select(['id', 'notes', 'amount', 'payee', 'date']);
+    },
+    [account?.id],
+  );
+
+  const usdBalance = useMemo(() => {
+    if (!usdTransactions) return 0;
+    return usdTransactions.reduce((sum, tx) => {
+      if (tx.payee === revalPayeeId || tx.notes?.includes('Автоматична курсова переоцінка')) {
+        return sum;
+      }
+      const notes = tx.notes || '';
+      const match = notes.match(/\[Original:\s*(-?\d+(?:\.\d+)?)\s*USD\]/i) ||
+                    notes.match(/\[USD:\s*(-?\d+(?:\.\d+)?)\]/i) ||
+                    notes.match(/(-?\d+(?:\.\d+)?)\s*USD/i);
+      const usdVal = match ? parseFloat(match[1]) : 0;
+      return sum + usdVal;
+    }, 0);
+  }, [usdTransactions, revalPayeeId]);
+
+  useEffect(() => {
+    if (!account?.id || !usdTransactions || usdTransactions.length === 0 || usdBalance === 0 || !payees) {
+      return;
+    }
+
+    const todayStr = currentDay();
+    if (nbuUsdRateDate !== todayStr || !nbuUsdRate) {
+      return;
+    }
+
+    const hasRevalToday = usdTransactions.some(
+      tx => tx.date === todayStr && tx.notes === 'Автоматична курсова переоцінка'
+    );
+
+    if (hasRevalToday) {
+      return;
+    }
+
+    async function runReval() {
+      try {
+        const rate = parseFloat(nbuUsdRate);
+        const currentUahCents = usdTransactions.reduce((sum, tx) => sum + tx.amount, 0);
+        const expectedUahCents = Math.round(usdBalance * rate * 100);
+        const diffCents = expectedUahCents - currentUahCents;
+
+        if (Math.abs(diffCents) >= 1) {
+          let payeeId = revalPayeeId;
+          if (!payeeId) {
+            payeeId = await send('payee-create', { name: 'Курсова переоцінка' });
+          }
+
+          await send('transactions-batch-update', {
+            added: [
+              {
+                account: account.id,
+                date: todayStr,
+                amount: diffCents,
+                notes: 'Автоматична курсова переоцінка',
+                payee: payeeId,
+              }
+            ]
+          });
+        }
+      } catch (e) {
+        console.error('Failed to run exchange rate revaluation:', e);
+      }
+    }
+
+    const timer = setTimeout(runReval, 3000);
+    return () => clearTimeout(timer);
+  }, [account, usdTransactions, usdBalance, payees, revalPayeeId, nbuUsdRate, nbuUsdRateDate]);
+
+  return (
+    <span style={{ opacity: 0.6, fontSize: '0.9em', marginLeft: 2 }}>
+      /{usdBalance.toFixed(2).replace(/\.00$/, '')}$
+    </span>
   );
 }
