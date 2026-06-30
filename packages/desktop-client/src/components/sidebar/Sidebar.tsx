@@ -14,7 +14,6 @@ import { Resizable } from 're-resizable';
 
 import { FeatureErrorFallback } from '#components/FeatureErrorFallback';
 import { useLocalPref } from '#hooks/useLocalPref';
-import { useResizeObserver } from '#hooks/useResizeObserver';
 import { replaceModal } from '#modals/modalsSlice';
 import { useDispatch } from '#redux';
 
@@ -36,26 +35,28 @@ export function Sidebar() {
   const [sidebarWidthLocalPref, setSidebarWidthLocalPref] =
     useLocalPref('sidebarWidth');
   const DEFAULT_SIDEBAR_WIDTH = 240;
-  const MAX_SIDEBAR_WIDTH = width / 3;
   const MIN_SIDEBAR_WIDTH = 200;
+  const MAX_SIDEBAR_WIDTH = width > 0 ? width / 3 : DEFAULT_SIDEBAR_WIDTH * 2;
 
-  const [sidebarWidth, setSidebarWidth] = useState(
-    Math.min(
-      MAX_SIDEBAR_WIDTH,
-      Math.max(
-        MIN_SIDEBAR_WIDTH,
-        sidebarWidthLocalPref || DEFAULT_SIDEBAR_WIDTH,
-      ),
-    ),
-  );
-
-  const onResizeStop = () => {
-    setSidebarWidthLocalPref(sidebarWidth);
-  };
-
-  const containerRef = useResizeObserver<HTMLDivElement>(rect => {
-    setSidebarWidth(rect.width);
+  // Initialize width state, safely handling window width being 0 during initial SSR/mount hydration
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const initial = sidebarWidthLocalPref || DEFAULT_SIDEBAR_WIDTH;
+    return Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, initial));
   });
+
+  // Keep state updated if saved preference or screen width limits change
+  React.useEffect(() => {
+    const initial = sidebarWidthLocalPref || DEFAULT_SIDEBAR_WIDTH;
+    setSidebarWidth(
+      Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, initial)),
+    );
+  }, [sidebarWidthLocalPref, MAX_SIDEBAR_WIDTH]);
+
+  const onResizeStop = (e: any, direction: any, ref: any) => {
+    const finalWidth = ref.clientWidth;
+    setSidebarWidthLocalPref(finalWidth);
+    setSidebarWidth(finalWidth);
+  };
 
   function onAddAccount() {
     dispatch(replaceModal({ modal: { name: 'add-account', options: {} } }));
@@ -83,7 +84,6 @@ export function Sidebar() {
         }}
       >
         <View
-          innerRef={containerRef}
           className={cx(
             'sidebar',
             css({
