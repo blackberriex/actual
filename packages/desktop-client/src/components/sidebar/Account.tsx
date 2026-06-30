@@ -158,10 +158,19 @@ export function Account<FieldName extends SheetFields<'account'>>({
     [isUsdAccount, account?.id],
   );
 
+  const { data: payees } = useQuery<{ id: string; name: string }>(
+    () => q('payees').select(['id', 'name']),
+    [],
+  );
+
+  const revalPayeeId = useMemo(() => {
+    return payees?.find(p => p.name === 'Курсова переоцінка')?.id;
+  }, [payees]);
+
   const usdBalance = useMemo(() => {
     if (!usdTransactions) return 0;
     return usdTransactions.reduce((sum, tx) => {
-      if (tx.payee === 'Курсова переоцінка' || tx.notes?.includes('Автоматична курсова переоцінка')) {
+      if (tx.payee === revalPayeeId || tx.notes?.includes('Автоматична курсова переоцінка')) {
         return sum;
       }
       const notes = tx.notes || '';
@@ -171,10 +180,10 @@ export function Account<FieldName extends SheetFields<'account'>>({
       const usdVal = match ? parseFloat(match[1]) : 0;
       return sum + usdVal;
     }, 0);
-  }, [usdTransactions]);
+  }, [usdTransactions, revalPayeeId]);
 
   useEffect(() => {
-    if (!isUsdAccount || !account?.id || !usdTransactions || usdTransactions.length === 0 || usdBalance === 0) {
+    if (!isUsdAccount || !account?.id || !usdTransactions || usdTransactions.length === 0 || usdBalance === 0 || !payees) {
       return;
     }
 
@@ -202,6 +211,11 @@ export function Account<FieldName extends SheetFields<'account'>>({
         const diffCents = expectedUahCents - currentUahCents;
 
         if (Math.abs(diffCents) >= 1) {
+          let payeeId = revalPayeeId;
+          if (!payeeId) {
+            payeeId = await send('payee-create', { name: 'Курсова переоцінка' });
+          }
+
           await send('transactions-batch-update', {
             added: [
               {
@@ -209,7 +223,7 @@ export function Account<FieldName extends SheetFields<'account'>>({
                 date: todayStr,
                 amount: diffCents,
                 notes: 'Автоматична курсова переоцінка',
-                payee_name: 'Курсова переоцінка',
+                payee: payeeId,
               }
             ]
           });
@@ -224,7 +238,7 @@ export function Account<FieldName extends SheetFields<'account'>>({
       isCancelled = true;
       clearTimeout(timer);
     };
-  }, [isUsdAccount, account?.id, usdTransactions, usdBalance]);
+  }, [isUsdAccount, account?.id, usdTransactions, usdBalance, payees, revalPayeeId]);
 
   const balanceCell = (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
