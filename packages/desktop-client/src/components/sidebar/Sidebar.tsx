@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useTranslation } from 'react-i18next';
@@ -53,12 +53,8 @@ export function Sidebar() {
     setSidebarWidthLocalPref(sidebarWidth);
   };
 
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useResizeObserver(containerRef, () => {
-    if (containerRef.current) {
-      setSidebarWidth(containerRef.current.clientWidth);
-    }
+  const containerRef = useResizeObserver<HTMLDivElement>(rect => {
+    setSidebarWidth(rect.width);
   });
 
   function onAddAccount() {
