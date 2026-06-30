@@ -253,7 +253,7 @@ export function Account<FieldName extends SheetFields<'account'>>({
     : null;
 
   const balanceCell = (
-    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
       <CellValue binding={query} type="financial" />
       {isUsdAccount && (
         <span style={{ opacity: 0.6, fontSize: '0.9em', marginLeft: 2 }}>
