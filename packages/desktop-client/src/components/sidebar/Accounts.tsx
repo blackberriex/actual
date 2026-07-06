@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 
 import { useSyncedPref } from '#hooks/useSyncedPref';
 import { currentDay } from '@actual-app/core/shared/months';
+import { q } from '@actual-app/core/shared/query';
+import { send } from '@actual-app/core/platform/client/connection';
 
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
@@ -43,6 +45,11 @@ export function Accounts() {
   const [nbuUsdRateDate, setNbuUsdRateDate] = useSyncedPref('nbu_usd_rate_date');
   const [, setNbuUsdRate] = useSyncedPref('nbu_usd_rate');
 
+  const [pbUsdRateDate, setPbUsdRateDate] = useSyncedPref('pb_usd_rate_date');
+  const [, setPbUsdSaleRate] = useSyncedPref('pb_usd_sale_rate');
+  const [, setPbUsdPurchaseRate] = useSyncedPref('pb_usd_purchase_rate');
+
+  // Fetch NBU USD rate daily
   useEffect(() => {
     const todayStr = currentDay();
     if (nbuUsdRateDate === todayStr) {
@@ -67,6 +74,96 @@ export function Accounts() {
     const timer = setTimeout(fetchRate, 2000);
     return () => clearTimeout(timer);
   }, [nbuUsdRateDate, setNbuUsdRate, setNbuUsdRateDate]);
+
+  // Fetch PrivatBank USD rates daily
+  useEffect(() => {
+    const todayStr = currentDay();
+    if (pbUsdRateDate === todayStr) {
+      return;
+    }
+
+    async function fetchPbRates() {
+      try {
+        const res = await send('tools/pb-exchange-rate', { date: todayStr });
+        if (res && res.purchaseRate && res.saleRate) {
+          setPbUsdSaleRate(String(res.saleRate));
+          setPbUsdPurchaseRate(String(res.purchaseRate));
+          setPbUsdRateDate(todayStr);
+        }
+      } catch (e) {
+        console.error('Failed to fetch PrivatBank exchange rates in sidebar:', e);
+      }
+    }
+
+    const timer = setTimeout(fetchPbRates, 4000);
+    return () => clearTimeout(timer);
+  }, [pbUsdRateDate, setPbUsdSaleRate, setPbUsdPurchaseRate, setPbUsdRateDate]);
+
+  // Background transfer rate conversions (UAH -> USD)
+  useEffect(() => {
+    if (accounts.length === 0) return;
+
+    const usdAccount = accounts.find(a => !a.closed && a.name?.toLowerCase().includes('usd'));
+    if (!usdAccount) return;
+
+    let isCancelled = false;
+
+    async function checkAndConvertTransfers() {
+      try {
+        const usdResult = await send('query', q('transactions')
+          .filter({ account: usdAccount.id })
+          .select(['id', 'amount', 'date', 'transfer_id'])
+        );
+        const usdTxes = usdResult?.data || [];
+
+        for (const usdTx of usdTxes) {
+          if (isCancelled) break;
+          if (!usdTx.transfer_id) continue;
+
+          const linkResult = await send('query', q('transactions')
+            .filter({ id: usdTx.transfer_id })
+            .select(['id', 'amount', 'account'])
+          );
+          const linkTx = linkResult?.data?.[0];
+          if (!linkTx) continue;
+
+          const linkAccount = accounts.find(a => a.id === linkTx.account);
+          const isLinkUah = linkAccount && !linkAccount.name?.toLowerCase().includes('usd');
+
+          if (isLinkUah) {
+            if (Math.abs(usdTx.amount) === Math.abs(linkTx.amount) && usdTx.amount !== 0) {
+              console.log(`[Transfer] Found UAH->USD transfer to convert: Date=${usdTx.date}, UAH cents=${linkTx.amount}`);
+              
+              const pbRate = await send('tools/pb-exchange-rate', { date: usdTx.date });
+              const rate = pbRate?.purchaseRate;
+              
+              if (rate && rate > 0) {
+                const targetCents = Math.round(usdTx.amount / rate);
+                console.log(`[Transfer] Converting to USD cents: ${usdTx.amount} -> ${targetCents} at rate ${rate}`);
+                
+                await send('transactions-batch-update', {
+                  updated: [{ id: usdTx.id, amount: targetCents }]
+                });
+              } else {
+                console.warn(`[Transfer] Could not fetch PrivatBank purchase rate for date ${usdTx.date}`);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Failed to run transfer conversion check:', e);
+      }
+    }
+
+    const initialTimer = setTimeout(checkAndConvertTransfers, 5000);
+    const interval = setInterval(checkAndConvertTransfers, 30000);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
+  }, [accounts]);
 
   function onDragChange(drag: { state: string }) {
     setIsDragging(drag.state === 'start');
