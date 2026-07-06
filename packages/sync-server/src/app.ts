@@ -76,6 +76,39 @@ app.get('/mode', (req, res) => {
   res.send(config.get('mode'));
 });
 
+app.get('/pb-rate', async (req, res) => {
+  const date = req.query.date;
+  if (!date || typeof date !== 'string') {
+    return res.status(400).send({ error: 'Date query parameter is required' });
+  }
+
+  // Convert YYYY-MM-DD to DD.MM.YYYY
+  let formattedDate = date;
+  if (date.includes('-')) {
+    const [year, month, day] = date.split('-');
+    formattedDate = `${day}.${month}.${year}`;
+  }
+
+  const url = `https://api.privatbank.ua/p24api/exchange_rates?json&date=${formattedDate}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`PrivatBank API returned status ${response.status}`);
+    }
+    const data = await response.json();
+    const usdRate = data?.exchangeRate?.find((r: any) => r.currency === 'USD');
+    if (usdRate) {
+      return res.send({
+        purchaseRate: usdRate.purchaseRate || usdRate.purchaseRateNB || null,
+        saleRate: usdRate.saleRate || usdRate.saleRateNB || null,
+      });
+    }
+  } catch (e) {
+    console.error(`Failed to fetch PrivatBank exchange rate for ${formattedDate}:`, e);
+  }
+  return res.send({ purchaseRate: null, saleRate: null });
+});
+
 app.get('/info', (_req, res) => {
   function findPackageJson(startDir: string) {
     // find the nearest package.json file while traversing up the directory tree

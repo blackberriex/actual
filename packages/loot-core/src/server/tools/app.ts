@@ -6,6 +6,7 @@ import { batchUpdateTransactions } from '#server/transactions';
 // @ts-strict-ignore
 import { q } from '#shared/query';
 import type { TransactionEntity } from '#types/models';
+import { getServer } from '#server/server-config';
 
 export type ToolsHandlers = {
   'tools/fix-split-transactions': typeof fixSplitTransactions;
@@ -157,28 +158,17 @@ async function getPrivatBankRate({ date }: { date: string }): Promise<{
   purchaseRate: number | null;
   saleRate: number | null;
 }> {
-  let formattedDate = date;
-  if (date.includes('-')) {
-    const [year, month, day] = date.split('-');
-    formattedDate = `${day}.${month}.${year}`;
-  }
-
-  const url = `https://api.privatbank.ua/p24api/exchange_rates?json&date=${formattedDate}`;
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`PrivatBank API returned status ${response.status}`);
+  const serverConfig = getServer();
+  if (serverConfig && serverConfig.SYNC_SERVER) {
+    const url = `${serverConfig.SYNC_SERVER}/pb-rate?date=${date}`;
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (e) {
+      console.error(`Failed to fetch PB rate via sync-server proxy for ${date}:`, e);
     }
-    const data = await response.json();
-    const usdRate = data?.exchangeRate?.find((r: any) => r.currency === 'USD');
-    if (usdRate) {
-      return {
-        purchaseRate: usdRate.purchaseRate || usdRate.purchaseRateNB || null,
-        saleRate: usdRate.saleRate || usdRate.saleRateNB || null,
-      };
-    }
-  } catch (e) {
-    console.error(`Failed to fetch PrivatBank exchange rate for ${formattedDate}:`, e);
   }
   return { purchaseRate: null, saleRate: null };
 }

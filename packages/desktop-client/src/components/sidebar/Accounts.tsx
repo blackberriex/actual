@@ -113,6 +113,7 @@ export function Accounts() {
         const usdResult = await send('query', q('transactions')
           .filter({ account: usdAccount.id })
           .select(['id', 'amount', 'date', 'transfer_id'])
+          .serialize()
         );
         const usdTxes = usdResult?.data || [];
 
@@ -123,6 +124,7 @@ export function Accounts() {
           const linkResult = await send('query', q('transactions')
             .filter({ id: usdTx.transfer_id })
             .select(['id', 'amount', 'account'])
+            .serialize()
           );
           const linkTx = linkResult?.data?.[0];
           if (!linkTx) continue;
