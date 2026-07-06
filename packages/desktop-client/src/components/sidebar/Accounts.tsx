@@ -112,7 +112,7 @@ export function Accounts() {
       try {
         const usdResult = await send('query', q('transactions')
           .filter({ account: usdAccount.id })
-          .select(['id', 'amount', 'date', 'transfer_id'])
+          .select(['id', 'amount', 'date', 'transfer_id', 'notes'])
           .serialize()
         );
         const usdTxes = usdResult?.data || [];
@@ -120,6 +120,10 @@ export function Accounts() {
         for (const usdTx of usdTxes) {
           if (isCancelled) break;
           if (!usdTx.transfer_id) continue;
+
+          if (usdTx.notes?.toLowerCase().includes('[usd:')) {
+            continue;
+          }
 
           const linkResult = await send('query', q('transactions')
             .filter({ id: usdTx.transfer_id })
@@ -133,22 +137,24 @@ export function Accounts() {
           const isLinkUah = linkAccount && !linkAccount.name?.toLowerCase().includes('usd');
 
           if (isLinkUah) {
-            if (Math.abs(usdTx.amount) === Math.abs(linkTx.amount) && usdTx.amount !== 0) {
-              console.log(`[Transfer] Found UAH->USD transfer to convert: Date=${usdTx.date}, UAH cents=${linkTx.amount}`);
+            console.log(`[Transfer] Found UAH->USD transfer to convert notes: Date=${usdTx.date}, UAH cents=${usdTx.amount}`);
+            
+            const pbRate = await send('tools/pb-exchange-rate', { date: usdTx.date });
+            const rate = pbRate?.purchaseRate;
+            
+            if (rate && rate > 0) {
+              const usdVal = Math.abs(usdTx.amount / 100) / rate;
+              const newNotes = usdTx.notes
+                ? `${usdTx.notes} [USD: ${usdVal.toFixed(2)}]`
+                : `[USD: ${usdVal.toFixed(2)}]`;
               
-              const pbRate = await send('tools/pb-exchange-rate', { date: usdTx.date });
-              const rate = pbRate?.purchaseRate;
+              console.log(`[Transfer] Appending notes [USD: ${usdVal.toFixed(2)}] to transfer at rate ${rate}`);
               
-              if (rate && rate > 0) {
-                const targetCents = Math.round(usdTx.amount / rate);
-                console.log(`[Transfer] Converting to USD cents: ${usdTx.amount} -> ${targetCents} at rate ${rate}`);
-                
-                await send('transactions-batch-update', {
-                  updated: [{ id: usdTx.id, amount: targetCents }]
-                });
-              } else {
-                console.warn(`[Transfer] Could not fetch PrivatBank purchase rate for date ${usdTx.date}`);
-              }
+              await send('transactions-batch-update', {
+                updated: [{ id: usdTx.id, notes: newNotes }]
+              });
+            } else {
+              console.warn(`[Transfer] Could not fetch PrivatBank purchase rate for date ${usdTx.date}`);
             }
           }
         }
