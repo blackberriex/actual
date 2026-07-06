@@ -160,8 +160,8 @@ export function Account<FieldName extends SheetFields<'account'>>({
   }, [accounts]);
 
   const usdAccountBalanceQuery = useMemo(() => {
-    return usdAccount ? bindings.accountBalance(usdAccount.id) : null;
-  }, [usdAccount]);
+    return usdAccount ? bindings.accountBalance(usdAccount.id) : query;
+  }, [usdAccount, query]);
 
   const usdBalanceVal = useSheetValue(usdAccountBalanceQuery);
 
