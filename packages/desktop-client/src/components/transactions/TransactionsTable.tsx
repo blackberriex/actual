@@ -1169,12 +1169,6 @@ const Transaction = memo(function Transaction({
     (payees && payeeId && getPayeesById(payees)[payeeId]) || undefined;
   const account = accounts && accountId && getAccountsById(accounts)[accountId];
   const isUsdAccount = account?.name?.toLowerCase().includes('usd');
-  const notesStr = notes || '';
-  const match = notesStr.match(/\[Original:\s*(-?\d+(?:\.\d+)?)\s*USD\]/i) ||
-                notesStr.match(/\[USD:\s*(-?\d+(?:\.\d+)?)\s*\]/i) ||
-                notesStr.match(/\[USD:\s*(-?\d+(?:\.\d+)?)\]/i) ||
-                notesStr.match(/(-?\d+(?:\.\d+)?)\s*USD/i);
-  const usdVal = match ? Math.abs(parseFloat(match[1])) : null;
 
   const isRecurring = Boolean(
     transaction.schedule ||
@@ -1836,8 +1830,8 @@ const Transaction = memo(function Transaction({
               ? (debit === '' && credit === '' ? amountToCurrency(0) : debit !== '' ? `-${debit}` : `+${credit}`)
               : debit === '' && credit === ''
                 ? amountToCurrency(0)
-                : isUsdAccount && usdVal !== null
-                  ? `${debit !== '' ? '-' : '+'}${usdVal.toFixed(2)}$ / ${debit !== '' ? '-' : '+'}${debit !== '' ? debit : credit} ₴`
+                : isUsdAccount
+                  ? `${debit !== '' ? '-' : '+'}${debit !== '' ? debit : credit}$`
                   : debit !== ''
                     ? `-${debit}`
                     : `+${credit}`
@@ -1855,7 +1849,6 @@ const Transaction = memo(function Transaction({
             ...(isParent && { fontStyle: 'italic' }),
             ...styles.tnum,
             ...amountStyle,
-            ...(isUsdAccount && usdVal !== null && { fontSize: '0.82em' }),
           }}
           inputProps={{
             value:

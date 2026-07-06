@@ -152,6 +152,18 @@ export function Account<FieldName extends SheetFields<'account'>>({
 
   const isUsdAccount = account?.name?.toLowerCase().includes('usd');
   const [nbuUsdRate] = useSyncedPref('nbu_usd_rate');
+  const [pbUsdSaleRate] = useSyncedPref('pb_usd_sale_rate');
+
+  const { data: accounts } = useAccounts();
+  const usdAccount = useMemo(() => {
+    return accounts?.find(a => !a.closed && a.name?.toLowerCase().includes('usd'));
+  }, [accounts]);
+
+  const usdAccountBalanceQuery = useMemo(() => {
+    return usdAccount ? bindings.accountBalance(usdAccount.id) : query;
+  }, [usdAccount, query]);
+
+  const usdBalanceVal = useSheetValue(usdAccountBalanceQuery);
 
   const isTotalRow = to === '/accounts' || to === '/accounts/onbudget' || to === '/accounts/offbudget';
 
@@ -167,10 +179,13 @@ export function Account<FieldName extends SheetFields<'account'>>({
       {isTotalRow ? (
         <UahTotalCell
           query={query}
+          usdAccount={usdAccount}
+          usdBalanceVal={usdBalanceVal}
+          pbUsdSaleRate={pbUsdSaleRate}
           nbuUsdRate={nbuUsdRate}
         />
       ) : isUsdAccount ? (
-        <USDBalanceCell account={account} />
+        <USDBalanceCell query={query} />
       ) : (
         <>
           <CellValue binding={query} type="financial" />
@@ -452,42 +467,28 @@ function EstimatedUSDBalance({ query, rate }: { query: any; rate: string }) {
   );
 }
 
-function USDBalanceCell({ account }: { account: AccountEntity }) {
-  const { data: usdTransactions } = useQuery<{ id: string; notes: string; amount: number; payee: string; date: string }>(
-    () => {
-      if (!account?.id) return null;
-      return q('transactions')
-        .filter({ account: account.id })
-        .select(['id', 'notes', 'amount', 'payee', 'date']);
-    },
-    [account?.id],
-  );
-
-  const usdBalance = useMemo(() => {
-    if (!usdTransactions) return 0;
-    return usdTransactions.reduce((sum, tx) => {
-      const notes = tx.notes || '';
-      const match = notes.match(/\[Original:\s*(-?\d+(?:\.\d+)?)\s*USD\]/i) ||
-                    notes.match(/\[USD:\s*(-?\d+(?:\.\d+)?)\s*\]/i) ||
-                    notes.match(/\[USD:\s*(-?\d+(?:\.\d+)?)\]/i) ||
-                    notes.match(/(-?\d+(?:\.\d+)?)\s*USD/i);
-      const usdVal = match ? parseFloat(match[1]) : 0;
-      return sum + usdVal;
-    }, 0);
-  }, [usdTransactions]);
-
+function USDBalanceCell({ query }: { query: any }) {
+  const rawBalance = useSheetValue(query);
+  if (typeof rawBalance !== 'number') return null;
+  const usd = rawBalance / 100;
   return (
     <span>
-      {usdBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}$
+      {usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}$
     </span>
   );
 }
 
 function UahTotalCell({
   query,
+  usdAccount,
+  usdBalanceVal,
+  pbUsdSaleRate,
   nbuUsdRate,
 }: {
   query: any;
+  usdAccount: any;
+  usdBalanceVal: any;
+  pbUsdSaleRate: string;
   nbuUsdRate: string;
 }) {
   const rawTotal = useSheetValue(query);
@@ -495,14 +496,18 @@ function UahTotalCell({
 
   if (typeof rawTotal !== 'number') return null;
 
+  const saleRate = pbUsdSaleRate ? parseFloat(pbUsdSaleRate) : 41.50;
+  const usdVal = typeof usdBalanceVal === 'number' ? usdBalanceVal : 0;
+  const correctedCents = rawTotal - (usdAccount ? usdVal : 0) + Math.round((usdAccount ? usdVal : 0) * saleRate);
+
   const nbuRate = nbuUsdRate ? parseFloat(nbuUsdRate) : 40.80;
-  const estimatedUsd = nbuRate > 0 ? Math.round((rawTotal / 100) / nbuRate) : 0;
+  const estimatedUsd = nbuRate > 0 ? Math.round((correctedCents / 100) / nbuRate) : 0;
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
       <FinancialText style={{ whiteSpace: 'nowrap' }}>
         <PrivacyFilter activationFilters={[true]}>
-          {format(rawTotal, 'financial')}
+          {format(correctedCents, 'financial')}
         </PrivacyFilter>
       </FinancialText>
       {nbuRate > 0 && (
