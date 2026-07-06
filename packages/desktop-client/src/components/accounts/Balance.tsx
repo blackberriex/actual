@@ -21,18 +21,23 @@ import { useCachedSchedules } from '#hooks/useCachedSchedules';
 import { useFormat } from '#hooks/useFormat';
 import { useSelectedItems } from '#hooks/useSelected';
 import { useSheetValue } from '#hooks/useSheetValue';
+import { useAccounts } from '#hooks/useAccounts';
+import { useSyncedPref } from '#hooks/useSyncedPref';
+import * as bindings from '#spreadsheet/bindings';
 import type { Binding } from '#spreadsheet';
 
 type DetailedBalanceProps = {
   name: string;
   balance: number;
   isExactBalance?: boolean;
+  formatter?: (value: number) => string;
 };
 
 function DetailedBalance({
   name,
   balance,
   isExactBalance = true,
+  formatter,
 }: DetailedBalanceProps) {
   const format = useFormat();
   return (
@@ -48,7 +53,7 @@ function DetailedBalance({
       <PrivacyFilter>
         <FinancialText style={{ fontWeight: 600 }}>
           {!isExactBalance && '~ '}
-          {format(balance, 'financial')}
+          {formatter ? formatter(balance) : format(balance, 'financial')}
         </FinancialText>
       </PrivacyFilter>
     </Text>
@@ -149,10 +154,14 @@ function FilteredBalance({ filteredAmount }: FilteredBalanceProps) {
 
 type MoreBalancesProps = {
   balanceQuery: { name: `balance-query-${string}`; query: Query };
+  account?: AccountEntity;
 };
 
-function MoreBalances({ balanceQuery }: MoreBalancesProps) {
+function MoreBalances({ balanceQuery, account }: MoreBalancesProps) {
   const { t } = useTranslation();
+  const { data: accounts = [] } = useAccounts();
+  const [pbUsdSaleRate] = useSyncedPref('pb_usd_sale_rate');
+  const usdAccount = accounts.find(a => !a.closed && a.name?.toLowerCase().includes('usd'));
 
   const cleared = useSheetValue<'balance', `balance-query-${string}-cleared`>({
     name: (balanceQuery.name + '-cleared') as `balance-query-${string}-cleared`,
@@ -167,10 +176,50 @@ function MoreBalances({ balanceQuery }: MoreBalancesProps) {
     query: balanceQuery.query.filter({ cleared: false }),
   });
 
+  const usdCleared = useSheetValue<'balance', `balance-query-usd-cleared`>(
+    usdAccount
+      ? {
+          name: 'balance-query-usd-cleared',
+          query: q('transactions')
+            .filter({ account: usdAccount.id, cleared: true })
+            .calculate({ $sum: '$amount' }),
+        }
+      : null
+  );
+  const usdUncleared = useSheetValue<'balance', `balance-query-usd-uncleared`>(
+    usdAccount
+      ? {
+          name: 'balance-query-usd-uncleared',
+          query: q('transactions')
+            .filter({ account: usdAccount.id, cleared: false })
+            .calculate({ $sum: '$amount' }),
+        }
+      : null
+  );
+
+  let finalCleared = cleared ?? 0;
+  let finalUncleared = uncleared ?? 0;
+
+  const saleRate = pbUsdSaleRate ? parseFloat(pbUsdSaleRate) : 41.50;
+
+  if (!account && usdAccount) {
+    if (typeof cleared === 'number' && typeof usdCleared === 'number') {
+      finalCleared = cleared - usdCleared + Math.round(usdCleared * saleRate);
+    }
+    if (typeof uncleared === 'number' && typeof usdUncleared === 'number') {
+      finalUncleared = uncleared - usdUncleared + Math.round(usdUncleared * saleRate);
+    }
+  }
+
+  const format = useFormat();
+  const formatter = account && account.id === usdAccount?.id
+    ? (val: number) => `${format(val, 'financial')}$`
+    : undefined;
+
   return (
     <>
-      <DetailedBalance name={t('Cleared total:')} balance={cleared ?? 0} />
-      <DetailedBalance name={t('Uncleared total:')} balance={uncleared ?? 0} />
+      <DetailedBalance name={t('Cleared total:')} balance={finalCleared} isExactBalance={true} formatter={formatter} />
+      <DetailedBalance name={t('Uncleared total:')} balance={finalUncleared} isExactBalance={true} formatter={formatter} />
     </>
   );
 }
@@ -195,6 +244,17 @@ export function Balances({
   const selectedItems = useSelectedItems();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const isButtonHovered = useHover(buttonRef as RefObject<HTMLButtonElement>);
+
+  const { data: accounts = [] } = useAccounts();
+  const [pbUsdSaleRate] = useSyncedPref('pb_usd_sale_rate');
+  const usdAccount = accounts.find(a => !a.closed && a.name?.toLowerCase().includes('usd'));
+
+  const usdAccountBalanceQuery = useMemo(() => {
+    return usdAccount ? bindings.accountBalance(usdAccount.id) : null;
+  }, [usdAccount]);
+
+  const usdBalanceVal = useSheetValue(usdAccountBalanceQuery);
+  const format = useFormat();
 
   return (
     <View
@@ -226,21 +286,36 @@ export function Balances({
           }
           type="financial"
         >
-          {props => (
-            <CellValueText
-              {...props}
-              style={{
-                fontSize: 22,
-                fontWeight: 400,
-                color:
-                  props.value < 0
-                    ? theme.numberNegative
-                    : props.value > 0
-                      ? theme.numberPositive
-                      : theme.pageTextSubdued,
-              }}
-            />
-          )}
+          {props => {
+            let finalValue = props.value;
+            const saleRate = pbUsdSaleRate ? parseFloat(pbUsdSaleRate) : 41.50;
+
+            if (!account && usdAccount && typeof usdBalanceVal === 'number') {
+              finalValue = props.value - usdBalanceVal + Math.round(usdBalanceVal * saleRate);
+            }
+
+            const formatter = account && account.id === usdAccount?.id
+              ? (val: number) => `${format(val, 'financial')}$`
+              : undefined;
+
+            return (
+              <CellValueText
+                {...props}
+                value={finalValue}
+                formatter={formatter}
+                style={{
+                  fontSize: 22,
+                  fontWeight: 400,
+                  color:
+                    finalValue < 0
+                      ? theme.numberNegative
+                      : finalValue > 0
+                        ? theme.numberPositive
+                        : theme.pageTextSubdued,
+                }}
+              />
+            );
+          }}
         </CellValue>
 
         <SvgArrowButtonRight1
@@ -258,7 +333,7 @@ export function Balances({
         />
       </Button>
 
-      {showExtraBalances && <MoreBalances balanceQuery={balanceQuery} />}
+      {showExtraBalances && <MoreBalances balanceQuery={balanceQuery} account={account} />}
 
       {selectedItems.size > 0 && (
         <SelectedBalance selectedItems={selectedItems} account={account} />

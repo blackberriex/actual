@@ -955,9 +955,20 @@ class AccountInternal extends PureComponent<
       return 0;
     }
 
-    const { data: amount } = await aqlQuery(
+    const { data: amount = 0 } = await aqlQuery(
       this.paged.query.calculate({ $sum: '$amount' }),
     );
+
+    const usdAccount = this.props.accounts.find(a => !a.closed && a.name?.toLowerCase().includes('usd'));
+    if (usdAccount && this.props.accountId !== usdAccount.id) {
+      const usdQuery = this.paged.query.filter({ account: usdAccount.id });
+      const { data: usdAmount = 0 } = await aqlQuery(
+        usdQuery.calculate({ $sum: '$amount' }),
+      );
+      const saleRate = this.props.pbUsdSaleRate ? parseFloat(this.props.pbUsdSaleRate) : 41.50;
+      return amount - usdAmount + Math.round(usdAmount * saleRate);
+    }
+
     return amount;
   };
 
@@ -2072,6 +2083,9 @@ export function Account() {
   const onCreatePayee = (name: PayeeEntity['name']) =>
     createPayee.mutateAsync({ name });
 
+  const [pbUsdSaleRate] = useSyncedPref('pb_usd_sale_rate');
+  const [nbuUsdRate] = useSyncedPref('nbu_usd_rate');
+
   return (
     <ErrorBoundary FallbackComponent={FeatureErrorFallback}>
       <SchedulesProvider query={schedulesQuery}>
@@ -2113,6 +2127,8 @@ export function Account() {
             onUnlinkAccount={onUnlinkAccount}
             onSyncAndDownload={onSyncAndDownload}
             onCreatePayee={onCreatePayee}
+            pbUsdSaleRate={pbUsdSaleRate}
+            nbuUsdRate={nbuUsdRate}
           />
         </SplitsExpandedProvider>
       </SchedulesProvider>
