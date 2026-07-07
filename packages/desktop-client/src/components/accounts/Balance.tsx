@@ -250,7 +250,9 @@ export function Balances({
   const usdAccount = accounts.find(a => !a.closed && a.name?.toLowerCase().includes('usd'));
 
   const usdAccountBalanceQuery = useMemo(() => {
-    return usdAccount ? bindings.accountBalance(usdAccount.id) : null;
+    return usdAccount
+      ? bindings.accountBalance(usdAccount.id)
+      : { name: 'dummy-usd-balance', value: 0 };
   }, [usdAccount]);
 
   const usdBalanceVal = useSheetValue(usdAccountBalanceQuery);
