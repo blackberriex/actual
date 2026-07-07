@@ -1,7 +1,7 @@
 FROM node:22-bookworm AS deps
 
-# Install required packages
-RUN apt-get update && apt-get install -y openssl
+# Install required packages (including git for lage)
+RUN apt-get update && apt-get install -y openssl git
 
 WORKDIR /app
 
@@ -29,7 +29,13 @@ RUN yarn install
 
 FROM deps AS builder
 COPY . .
-RUN yarn build
+
+# Initialize a throwaway git repo to satisfy lage
+RUN git -c init.defaultBranch=master init -q \
+    && git -c user.email=build@docker -c user.name=docker-build add -A \
+    && git -c user.email=build@docker -c user.name=docker-build commit -qm build
+
+RUN yarn build --scope=@actual-app/api
 
 FROM node:22-alpine AS prod
 RUN apk add --no-cache openssl
