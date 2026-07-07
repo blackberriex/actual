@@ -144,10 +144,10 @@ async function runSync() {
       
       // Fetch from Monobank
       const nowSec = Math.floor(Date.now() / 1000);
-      const threeDaysAgoSec = nowSec - (3 * 24 * 60 * 60);
+      const oneDayAgoSec = nowSec - (24 * 60 * 60);
       
-      console.log(`Fetching Monobank statement from ${formatLocalDate(threeDaysAgoSec)} to ${formatLocalDate(nowSec)}...`);
-      const monoResponse = await fetch(`https://api.monobank.ua/personal/statement/${acc.monoId}/${threeDaysAgoSec}/${nowSec}`, {
+      console.log(`Fetching Monobank statement from ${formatLocalDate(oneDayAgoSec)} to ${formatLocalDate(nowSec)}...`);
+      const monoResponse = await fetch(`https://api.monobank.ua/personal/statement/${acc.monoId}/${oneDayAgoSec}/${nowSec}`, {
         headers: { 'X-Token': MONOBANK_TOKEN }
       });
       
