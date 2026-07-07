@@ -15,8 +15,24 @@ const {
 } = process.env;
 
 // Validate basic configuration
-if (!MONOBANK_TOKEN || !MONOBANK_ACCOUNT_ID || !ACTUAL_SERVER_URL || !ACTUAL_SERVER_PASSWORD || !ACTUAL_SYNC_ID) {
+if (!MONOBANK_TOKEN || !ACTUAL_SERVER_URL || !ACTUAL_SERVER_PASSWORD || !ACTUAL_SYNC_ID) {
   console.error('Error: Missing required environment variables. Please check your .env file.');
+  process.exit(1);
+}
+
+// Check account configurations
+let accountsToSync = [];
+if (process.env.MONOBANK_ACCOUNTS) {
+  try {
+    accountsToSync = JSON.parse(process.env.MONOBANK_ACCOUNTS);
+  } catch (e) {
+    console.error('Error: MONOBANK_ACCOUNTS is not a valid JSON string.');
+    process.exit(1);
+  }
+} else if (MONOBANK_ACCOUNT_ID) {
+  accountsToSync = [{ monoId: MONOBANK_ACCOUNT_ID, actualName: ACTUAL_ACCOUNT_NAME }];
+} else {
+  console.error('Error: Please provide MONOBANK_ACCOUNTS or MONOBANK_ACCOUNT_ID in your .env file.');
   process.exit(1);
 }
 
@@ -95,30 +111,7 @@ async function runSync() {
   console.log(`Time: ${new Date().toLocaleString()}`);
   
   try {
-    // 1. Fetch transactions from Monobank
-    const nowSec = Math.floor(Date.now() / 1000);
-    // Query last 3 days of statement to be fully safe against timezone overlaps or delays
-    const threeDaysAgoSec = nowSec - (3 * 24 * 60 * 60);
-    
-    console.log(`Fetching Monobank statement from ${formatLocalDate(threeDaysAgoSec)} to ${formatLocalDate(nowSec)}...`);
-    const monoResponse = await fetch(`https://api.monobank.ua/personal/statement/${MONOBANK_ACCOUNT_ID}/${threeDaysAgoSec}/${nowSec}`, {
-      headers: { 'X-Token': MONOBANK_TOKEN }
-    });
-    
-    if (!monoResponse.ok) {
-      const errText = await monoResponse.text();
-      throw new Error(`Monobank API Error: ${monoResponse.status} ${monoResponse.statusText} - ${errText}`);
-    }
-    
-    const transactions = await monoResponse.json();
-    console.log(`Fetched ${transactions.length} transactions from Monobank.`);
-    
-    if (transactions.length === 0) {
-      console.log('No new transactions to import. Done.');
-      process.exit(0);
-    }
-    
-    // 2. Initialize Actual Budget API
+    // 1. Initialize Actual Budget API
     console.log('Connecting to Actual Budget server...');
     const dataDir = path.join(__dirname, 'actual-data');
     if (!fs.existsSync(dataDir)) {
@@ -135,41 +128,75 @@ async function runSync() {
     const downloadOpts = ACTUAL_ENCRYPTION_PASSWORD ? { password: ACTUAL_ENCRYPTION_PASSWORD } : {};
     await api.downloadBudget(ACTUAL_SYNC_ID, downloadOpts);
     
-    // 3. Resolve account ID
-    console.log(`Resolving Actual account with name: "${ACTUAL_ACCOUNT_NAME}"...`);
-    const accounts = await api.getAccounts();
-    const targetAccount = accounts.find(a => a.name.toLowerCase() === ACTUAL_ACCOUNT_NAME.toLowerCase());
-    if (!targetAccount) {
-      throw new Error(`Could not find account named "${ACTUAL_ACCOUNT_NAME}" in Actual Budget. Available accounts: ${accounts.map(a => a.name).join(', ')}`);
-    }
-    console.log(`Found account UUID: ${targetAccount.id}`);
+    // Resolve all Actual accounts
+    const actualAccounts = await api.getAccounts();
     
-    // 4. Normalize transactions
-    const normalizedTransactions = [];
-    
-    for (const tx of transactions) {
-      const cleaned = cleanDescription(tx.description);
+    // 2. Loop through configured accounts
+    for (let i = 0; i < accountsToSync.length; i++) {
+      const acc = accountsToSync[i];
+      console.log(`\n[Account ${i+1}/${accountsToSync.length}] Processing "${acc.actualName}"...`);
       
-      // Deduct commission if present in the record
-      let finalAmount = tx.amount;
-      if (tx.commissionRate && tx.commissionRate > 0) {
-        finalAmount -= Math.abs(tx.commissionRate);
+      // Sleep briefly between account statements to respect API limits
+      if (i > 0) {
+        console.log('Waiting 1 second to respect Monobank rate limits...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
       
-      normalizedTransactions.push({
-        date: formatLocalDate(tx.time),
-        amount: finalAmount,
-        payee_name: cleaned,
-        notes: tx.description,
-        imported_id: tx.id
+      // Fetch from Monobank
+      const nowSec = Math.floor(Date.now() / 1000);
+      const threeDaysAgoSec = nowSec - (3 * 24 * 60 * 60);
+      
+      console.log(`Fetching Monobank statement from ${formatLocalDate(threeDaysAgoSec)} to ${formatLocalDate(nowSec)}...`);
+      const monoResponse = await fetch(`https://api.monobank.ua/personal/statement/${acc.monoId}/${threeDaysAgoSec}/${nowSec}`, {
+        headers: { 'X-Token': MONOBANK_TOKEN }
       });
+      
+      if (!monoResponse.ok) {
+        const errText = await monoResponse.text();
+        console.error(`Error fetching Monobank statement for "${acc.actualName}": ${monoResponse.status} - ${errText}`);
+        continue;
+      }
+      
+      const transactions = await monoResponse.json();
+      console.log(`Fetched ${transactions.length} transactions for "${acc.actualName}".`);
+      
+      if (transactions.length === 0) {
+        console.log(`No new transactions for "${acc.actualName}". Skipping import.`);
+        continue;
+      }
+      
+      // Resolve Actual account UUID
+      const targetAccount = actualAccounts.find(a => a.name.toLowerCase() === acc.actualName.toLowerCase());
+      if (!targetAccount) {
+        console.error(`Error: Could not find account named "${acc.actualName}" in Actual Budget. Skipping.`);
+        continue;
+      }
+      
+      // Normalize transactions
+      const normalizedTransactions = [];
+      for (const tx of transactions) {
+        const cleaned = cleanDescription(tx.description);
+        
+        let finalAmount = tx.amount;
+        if (tx.commissionRate && tx.commissionRate > 0) {
+          finalAmount -= Math.abs(tx.commissionRate);
+        }
+        
+        normalizedTransactions.push({
+          date: formatLocalDate(tx.time),
+          amount: finalAmount,
+          payee_name: cleaned,
+          notes: tx.description,
+          imported_id: tx.id
+        });
+      }
+      
+      // Import transactions
+      console.log(`Importing ${normalizedTransactions.length} transactions into "${acc.actualName}"...`);
+      await api.addTransactions(targetAccount.id, normalizedTransactions);
     }
     
-    // 6. Import transactions using Actual API
-    console.log(`Importing ${normalizedTransactions.length} transactions (duplicates will be automatically skipped)...`);
-    const importResult = await api.addTransactions(targetAccount.id, normalizedTransactions);
-    
-    console.log('Syncing database with server...');
+    console.log('\nSyncing database with server...');
     await api.shutdown();
     
     console.log('--- Monobank Daily Sync Completed Successfully ---');
