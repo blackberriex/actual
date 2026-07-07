@@ -37,8 +37,8 @@ RUN git -c init.defaultBranch=master init -q \
 
 RUN yarn build --scope=@actual-app/api
 
-FROM node:22-alpine AS prod
-RUN apk add --no-cache openssl
+FROM node:22-slim AS prod
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/packages/api /app/packages/api
