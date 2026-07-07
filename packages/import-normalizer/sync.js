@@ -144,22 +144,11 @@ async function runSync() {
     }
     console.log(`Found account UUID: ${targetAccount.id}`);
     
-    // 4. Resolve category map
-    const categories = await api.getCategories();
-    const categoryMap = new Map();
-    categories.forEach(c => {
-      categoryMap.set(c.name.toLowerCase(), c.id);
-    });
-    
-    // 5. Load rules and normalize transactions
-    const rules = loadRules();
+    // 4. Normalize transactions
     const normalizedTransactions = [];
     
     for (const tx of transactions) {
       const cleaned = cleanDescription(tx.description);
-      const { payeeName, categoryName } = applyRules(tx.description, cleaned, rules);
-      
-      const categoryId = categoryName ? categoryMap.get(categoryName.toLowerCase()) : undefined;
       
       // Deduct commission if present in the record
       let finalAmount = tx.amount;
@@ -170,10 +159,9 @@ async function runSync() {
       normalizedTransactions.push({
         date: formatLocalDate(tx.time),
         amount: finalAmount,
-        payee_name: payeeName,
+        payee_name: cleaned,
         notes: tx.description,
-        imported_id: tx.id,
-        category: categoryId
+        imported_id: tx.id
       });
     }
     
