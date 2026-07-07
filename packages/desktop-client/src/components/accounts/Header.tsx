@@ -548,6 +548,7 @@ export function AccountHeader({
                             ]
                           : []),
                         { name: 'export', text: t('Export') },
+                        { name: 'privat-multi-import', text: 'Мульти-імпорт ПриватБанк' },
                         {
                           name: 'toggle-net-worth-chart',
                           text: showNetWorthChart
@@ -743,7 +744,8 @@ type AccountMenuProps = {
       | 'remove-sorting'
       | 'toggle-cleared'
       | 'toggle-reconciled'
-      | 'toggle-net-worth-chart',
+      | 'toggle-net-worth-chart'
+      | 'privat-multi-import',
   ) => void;
 };
 
@@ -805,6 +807,7 @@ function AccountMenu({
             : t('Show reconciled transactions'),
         },
         { name: 'export', text: t('Export') },
+        { name: 'privat-multi-import', text: 'Мульти-імпорт ПриватБанк' },
         ...(account && !account.closed
           ? canSync
             ? [

@@ -807,7 +807,8 @@ class AccountInternal extends PureComponent<
       | 'remove-sorting'
       | 'toggle-cleared'
       | 'toggle-reconciled'
-      | 'toggle-net-worth-chart',
+      | 'toggle-net-worth-chart'
+      | 'privat-multi-import',
   ) => {
     const accountId = this.props.accountId!;
     const account = this.props.accounts.find(
@@ -916,8 +917,181 @@ class AccountInternal extends PureComponent<
           this.props.setShowNetWorthChart(true);
         }
         break;
+      case 'privat-multi-import':
+        void this.onPrivatMultiImport();
+        break;
       default:
     }
+  };
+
+  onPrivatMultiImport = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx,.xls';
+    
+    input.onchange = async (e: any) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = async (event: any) => {
+        try {
+          const data = new Uint8Array(event.target.result as ArrayBuffer);
+          const XLSX = await import('xlsx');
+          const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+          
+          const actualAccounts = this.props.accounts;
+          const privatUahAcct = actualAccounts.find(a => a.name.toLowerCase() === 'privat uah');
+          const privatCreditAcct = actualAccounts.find(a => a.name.toLowerCase() === 'privat credit');
+          const privatUsdAcct = actualAccounts.find(a => a.name.toLowerCase() === 'privat usd');
+          
+          if (!privatUahAcct || !privatCreditAcct || !privatUsdAcct) {
+            alert('Помилка: Не знайдено рахунки "Privat UAH", "Privat Credit" або "Privat USD" у вашому бюджеті.');
+            return;
+          }
+          
+          const transactionsByAccount: Record<string, any[]> = {
+            [privatUahAcct.id]: [],
+            [privatCreditAcct.id]: [],
+            [privatUsdAcct.id]: []
+          };
+          
+          let totalParsed = 0;
+          
+          for (const sheetName of workbook.SheetNames) {
+            const sheet = workbook.Sheets[sheetName];
+            const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            if (rows.length === 0) continue;
+            
+            let headerRowIdx = -1;
+            let headers: string[] = [];
+            
+            for (let i = 0; i < Math.min(rows.length, 15); i++) {
+              const row = rows[i];
+              if (!Array.isArray(row)) continue;
+              const rowStr = row.map(v => String(v || '').toLowerCase().trim());
+              if (rowStr.some(h => h.includes('дата') || h.includes('опис операції') || h.includes('картка'))) {
+                headerRowIdx = i;
+                headers = row.map(v => String(v || '').trim());
+                break;
+              }
+            }
+            
+            if (headerRowIdx === -1) continue;
+            
+            const dateCol = headers.findIndex(h => /дата|date/i.test(h));
+            const payeeCol = headers.findIndex(h => /опис операції|опис|description|payee/i.test(h));
+            const amountCol = headers.findIndex(h => /сума в валюті картки|card currency amount|сума|amount/i.test(h));
+            const cardCol = headers.findIndex(h => /картка|card|номер/i.test(h));
+            const currencyCol = headers.findIndex(h => /валюта картки|валюта/i.test(h));
+            
+            if (dateCol === -1 || payeeCol === -1 || amountCol === -1) continue;
+            
+            for (let i = headerRowIdx + 1; i < rows.length; i++) {
+              const row = rows[i];
+              if (!row) continue;
+              
+              const rawDate = row[dateCol];
+              const rawPayee = row[payeeCol];
+              const rawAmount = row[amountCol];
+              const rawCard = cardCol !== -1 ? String(row[cardCol] || '').trim() : '';
+              const rawCurrency = currencyCol !== -1 ? String(row[currencyCol] || '').trim() : '';
+              
+              if (!rawDate || !rawPayee || rawAmount === undefined || rawAmount === null) continue;
+              
+              let dateStr = '';
+              if (rawDate instanceof Date) {
+                const yyyy = rawDate.getFullYear();
+                const mm = String(rawDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(rawDate.getDate()).padStart(2, '0');
+                dateStr = `${yyyy}-${mm}-${dd}`;
+              } else {
+                const datePart = String(rawDate).split(' ')[0];
+                const parts = datePart.split('.');
+                if (parts.length === 3) {
+                  dateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                } else {
+                  dateStr = datePart;
+                }
+              }
+              
+              let amountFloat = 0;
+              if (typeof rawAmount === 'number') {
+                amountFloat = rawAmount;
+              } else {
+                amountFloat = parseFloat(String(rawAmount).replace(/\s/g, '').replace(',', '.'));
+              }
+              if (isNaN(amountFloat)) continue;
+              
+              const cleanedPayee = cleanDescription(String(rawPayee));
+              
+              let targetAccountId = null;
+              if (rawCard.includes('9366')) {
+                targetAccountId = privatUahAcct.id;
+              } else if (rawCard.includes('7833')) {
+                targetAccountId = privatCreditAcct.id;
+              } else if (rawCard.includes('7100')) {
+                targetAccountId = privatUsdAcct.id;
+              } else {
+                if (rawCurrency.toUpperCase() === 'USD') {
+                  targetAccountId = privatUsdAcct.id;
+                } else {
+                  const sheetTitleLower = sheetName.toLowerCase();
+                  if (sheetTitleLower.includes('credit') || sheetTitleLower.includes('кредит') || sheetTitleLower.includes('універсаль')) {
+                    targetAccountId = privatCreditAcct.id;
+                  } else if (sheetTitleLower.includes('usd') || sheetTitleLower.includes('долар')) {
+                    targetAccountId = privatUsdAcct.id;
+                  } else {
+                    targetAccountId = privatUahAcct.id;
+                  }
+                }
+              }
+              
+              const amountCents = Math.round(amountFloat * 100);
+              const importedId = `privat-multi-${dateStr}-${amountCents}-${rawPayee}`;
+              
+              if (targetAccountId) {
+                transactionsByAccount[targetAccountId].push({
+                  date: dateStr,
+                  amount: amountCents,
+                  payee_name: cleanedPayee,
+                  notes: String(rawPayee),
+                  imported_id: importedId
+                });
+                totalParsed++;
+              }
+            }
+          }
+          
+          let totalAdded = 0;
+          let totalUpdated = 0;
+          
+          for (const [acctId, txes] of Object.entries(transactionsByAccount)) {
+            if (txes.length > 0) {
+              const res = await send('transactions-import', {
+                accountId: acctId,
+                transactions: txes,
+                isPreview: false
+              });
+              if (res) {
+                totalAdded += res.added?.length || 0;
+                totalUpdated += res.updated?.length || 0;
+              }
+            }
+          }
+          
+          alert(`Мульти-імпорт завершено!\n\nОпрацьовано транзакцій у файлі: ${totalParsed}\nДодано нових: ${totalAdded}\nОновлено: ${totalUpdated}`);
+          this.fetchTransactions();
+          
+        } catch (err: any) {
+          console.error('Multi-import error:', err);
+          alert('Помилка при мульти-імпорті: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    };
+    
+    input.click();
   };
 
   getAccountTitle(account?: AccountEntity, id?: string) {
@@ -2134,4 +2308,17 @@ export function Account() {
       </SchedulesProvider>
     </ErrorBoundary>
   );
+}
+
+function cleanDescription(desc: string) {
+  if (!desc) return '';
+  let clean = desc.trim();
+  clean = clean.replace(/^(?:EPC\*|PRVT\*|MCC\*|CARD\s*MATCHING|VND\*|FND\*|DBT\*|CRD\*)\s*/i, '');
+  clean = clean.replace(/,\s*(?:Kyiv|Kiev|Lviv|Odessa|Kharkiv|Dnipro|UA|US|DE|CH)\b.*$/i, '');
+  clean = clean.replace(/\b(Kyiv|Kiev|Lviv|Odessa|Kharkiv|Dnipro|UA|US|DE|CH)\b.*$/i, '');
+  clean = clean.replace(/\b(Terminal|Term|ID|POS)\s*[0-9A-Z]+/i, '');
+  clean = clean.replace(/[\s\-,._/|]+$/, '');
+  clean = clean.replace(/^[\s\-,._/|]+/, '');
+  clean = clean.replace(/\s+/, ' ');
+  return clean.trim();
 }
