@@ -103,11 +103,15 @@ export function RecurringStatusCard({
       }
     }
 
-    // schedules still due this month in the selected categories
+    // schedules still due this month in the selected categories;
+    // category comes from the rule's set-category action or, failing that,
+    // from the newest categorized transaction linked to the schedule
+    const inferredCategories = spentData?.scheduleCategories ?? {};
     const remainingByCategory = new Map<string, number>();
     for (const schedule of schedules) {
       if (schedule.completed) continue;
-      const scheduleCategory = getScheduleCategory(schedule);
+      const scheduleCategory =
+        getScheduleCategory(schedule) ?? inferredCategories[schedule.id];
       if (!scheduleCategory || !idSet.has(scheduleCategory)) continue;
       if (monthUtils.getMonth(schedule.next_date) !== currentMonth) continue;
       const status = statuses.get(schedule.id);

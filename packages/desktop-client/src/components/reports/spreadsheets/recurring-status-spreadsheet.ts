@@ -11,6 +11,10 @@ export type RecurringSpentRow = {
 
 export type RecurringSpentData = {
   rows: RecurringSpentRow[];
+  // schedule id -> category id, inferred from the latest categorized
+  // transaction linked to the schedule (schedules carry no category
+  // themselves unless their rule has an explicit set-category action)
+  scheduleCategories: Record<string, string>;
   start: string;
   end: string;
 };
@@ -25,6 +29,7 @@ export function recurringSpentSpreadsheet(categoryIds: string[]) {
     if (!categoryIds.length) {
       setData({
         rows: [],
+        scheduleCategories: {},
         start: monthUtils.firstDayOfMonth(month),
         end: monthUtils.currentDay(),
       });
@@ -54,8 +59,42 @@ export function recurringSpentSpreadsheet(categoryIds: string[]) {
       return;
     }
 
+    // infer each schedule's category from its schedule-linked transactions
+    // (newest categorized one wins); look back 6 months
+    const scheduleCategories: Record<string, string> = {};
+    try {
+      const linked = await aqlQuery(
+        q('transactions')
+          .filter({
+            $and: [
+              { schedule: { $ne: null } },
+              {
+                date: {
+                  $transform: '$month',
+                  $gte: monthUtils.subMonths(month, 6),
+                },
+              },
+            ],
+          })
+          .select([
+            { schedule: { $id: '$schedule.id' } },
+            { category: { $id: '$category.id' } },
+            'date',
+          ])
+          .orderBy({ date: 'desc' }),
+      );
+      for (const row of linked.data) {
+        if (row.schedule && row.category && !scheduleCategories[row.schedule]) {
+          scheduleCategories[row.schedule] = row.category;
+        }
+      }
+    } catch (error) {
+      console.error('Error executing schedule-category query:', error);
+    }
+
     setData({
       rows: data.data,
+      scheduleCategories,
       start: monthUtils.firstDayOfMonth(month),
       end: monthUtils.currentDay(),
     });
