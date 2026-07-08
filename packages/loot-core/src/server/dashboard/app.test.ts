@@ -25,6 +25,8 @@ const ALL_WIDGET_TYPES = allWidgetTypes(
   'sankey-card',
   'balance-forecast-card',
   'age-of-money-card',
+  'top-categories-card',
+  'recurring-status-card',
 );
 
 describe('isWidgetType', () => {

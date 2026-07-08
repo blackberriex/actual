@@ -45,6 +45,8 @@ export function isWidgetType(
     'sankey-card',
     'balance-forecast-card',
     'age-of-money-card',
+    'top-categories-card',
+    'recurring-status-card',
   ].includes(type);
 }
 

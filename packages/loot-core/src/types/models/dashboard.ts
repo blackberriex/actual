@@ -135,6 +135,22 @@ export type AgeOfMoneyWidget = AbstractWidget<
   } | null
 >;
 
+export type TopCategoriesWidget = AbstractWidget<
+  'top-categories-card',
+  {
+    name?: string;
+    count?: number;
+  } | null
+>;
+
+export type RecurringStatusWidget = AbstractWidget<
+  'recurring-status-card',
+  {
+    name?: string;
+    categoryIds?: string[];
+  } | null
+>;
+
 type SpecializedWidget =
   | NetWorthWidget
   | CashFlowWidget
@@ -147,7 +163,9 @@ type SpecializedWidget =
   | FormulaWidget
   | SankeyWidget
   | AgeOfMoneyWidget
-  | BalanceForecastWidget;
+  | BalanceForecastWidget
+  | TopCategoriesWidget
+  | RecurringStatusWidget;
 export type DashboardWidgetEntity = SpecializedWidget | CustomReportWidget;
 export type NewDashboardWidgetEntity = Omit<
   DashboardWidgetEntity,

@@ -20,11 +20,13 @@ import type {
   DashboardWidgetEntity,
   ExportImportDashboard,
   MarkdownWidget,
+  RecurringStatusWidget,
 } from '@actual-app/core/types/models';
 
 import { MOBILE_NAV_HEIGHT } from '#components/mobile/MobileNavTabs';
 import { MobilePageHeader, Page } from '#components/Page';
 import { useAccounts } from '#hooks/useAccounts';
+import { useCategories } from '#hooks/useCategories';
 import {
   useDashboardPages,
   useDashboardPageWidgets,
@@ -67,9 +69,11 @@ import { FormulaCard } from './reports/FormulaCard';
 import { MarkdownCard } from './reports/MarkdownCard';
 import { MissingReportCard } from './reports/MissingReportCard';
 import { NetWorthCard } from './reports/NetWorthCard';
+import { RecurringStatusCard } from './reports/RecurringStatusCard';
 import { SankeyCard } from './reports/SankeyCard';
 import { SpendingCard } from './reports/SpendingCard';
 import { SummaryCard } from './reports/SummaryCard';
+import { TopCategoriesCard } from './reports/TopCategoriesCard';
 
 function isCustomReportWidget(
   widget: DashboardWidgetEntity,
@@ -121,6 +125,8 @@ export function Overview({ dashboard }: OverviewProps) {
   const balanceForecastReportEnabled = useFeatureFlag('balanceForecastReport');
 
   const formulaMode = useFeatureFlag('formulaMode');
+  const { data: categoryViews = { grouped: [], list: [] } } = useCategories();
+  const categories = categoryViews.list;
 
   const [isImporting, setIsImporting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -593,6 +599,21 @@ export function Overview({ dashboard }: OverviewProps) {
                               return;
                             }
 
+                            if (item === 'recurring-status-card') {
+                              // pre-select subscription/mortgage-like categories
+                              const defaultIds = categories
+                                .filter(category =>
+                                  /підпис|subscri|іпотек|mortgage/i.test(
+                                    category.name,
+                                  ),
+                                )
+                                .map(category => category.id);
+                              onAddWidget<RecurringStatusWidget>(item, {
+                                categoryIds: defaultIds,
+                              });
+                              return;
+                            }
+
                             onAddWidget(item);
                           }}
                           items={[
@@ -647,6 +668,14 @@ export function Overview({ dashboard }: OverviewProps) {
                             {
                               name: 'calendar-card' as const,
                               text: t('Calendar card'),
+                            },
+                            {
+                              name: 'top-categories-card' as const,
+                              text: t('Top spending categories'),
+                            },
+                            {
+                              name: 'recurring-status-card' as const,
+                              text: t('Recurring payments status'),
                             },
                             ...(formulaMode
                               ? [
@@ -976,6 +1005,32 @@ export function Overview({ dashboard }: OverviewProps) {
                         ) : widget.type === 'sankey-card' &&
                           sankeyFeatureFlag ? (
                           <SankeyCard
+                            widgetId={item.i}
+                            isEditing={isEditing}
+                            meta={widget.meta}
+                            onMetaChange={newMeta =>
+                              onMetaChange(item, newMeta)
+                            }
+                            onRemove={() => onRemoveWidget(item.i)}
+                            onCopy={targetDashboardId =>
+                              onCopyWidget(item.i, targetDashboardId)
+                            }
+                          />
+                        ) : widget.type === 'top-categories-card' ? (
+                          <TopCategoriesCard
+                            widgetId={item.i}
+                            isEditing={isEditing}
+                            meta={widget.meta}
+                            onMetaChange={newMeta =>
+                              onMetaChange(item, newMeta)
+                            }
+                            onRemove={() => onRemoveWidget(item.i)}
+                            onCopy={targetDashboardId =>
+                              onCopyWidget(item.i, targetDashboardId)
+                            }
+                          />
+                        ) : widget.type === 'recurring-status-card' ? (
+                          <RecurringStatusCard
                             widgetId={item.i}
                             isEditing={isEditing}
                             meta={widget.meta}
