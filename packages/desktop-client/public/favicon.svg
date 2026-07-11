@@ -1,29 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Dark steel circle background to ensure contrast on all tab themes -->
+  <!-- Dark steel circle background -->
   <circle cx="50" cy="50" r="48" fill="#1e293b" />
-  <!-- Outer dial ring -->
-  <circle cx="50" cy="50" r="38" stroke="#ffffff" stroke-width="5" fill="none" opacity="0.9" />
-  <!-- Ticks (every 30 degrees) -->
-  <g stroke="#ffffff" stroke-width="3">
-    <line x1="50" y1="18" x2="50" y2="22" transform="rotate(0 50 50)" />
-    <line x1="50" y1="18" x2="50" y2="22" transform="rotate(30 50 50)" />
-    <line x1="50" y1="18" x2="50" y2="22" transform="rotate(60 50 50)" />
-    <line x1="50" y1="18" x2="50" y2="22" transform="rotate(90 50 50)" />
-    <line x1="50" y1="18" x2="50" y2="22" transform="rotate(120 50 50)" />
-    <line x1="50" y1="18" x2="50" y2="22" transform="rotate(150 50 50)" />
-    <line x1="50" y1="18" x2="50" y2="22" transform="rotate(180 50 50)" />
-    <line x1="50" y1="18" x2="50" y2="22" transform="rotate(210 50 50)" />
-    <line x1="50" y1="18" x2="50" y2="22" transform="rotate(240 50 50)" />
-    <line x1="50" y1="18" x2="50" y2="22" transform="rotate(270 50 50)" />
-    <line x1="50" y1="18" x2="50" y2="22" transform="rotate(300 50 50)" />
-    <line x1="50" y1="18" x2="50" y2="22" transform="rotate(330 50 50)" />
-  </g>
-  <!-- Middle dial disk -->
-  <circle cx="50" cy="50" r="24" stroke="#ffffff" stroke-width="3" fill="none" />
-  <!-- Inner solid knob -->
-  <circle cx="50" cy="50" r="14" fill="#ffffff" />
-  <!-- Pointer indicator line -->
-  <line x1="50" y1="50" x2="50" y2="30" stroke="#1e293b" stroke-width="4" stroke-linecap="round" />
-  <!-- Pointer dot on the pointer line -->
-  <circle cx="50" cy="36" r="2.5" fill="#ffffff" />
+  <!-- Thick outer ring -->
+  <circle cx="50" cy="50" r="32" stroke="#ffffff" stroke-width="10" fill="none" />
+  <!-- Thick cross handles -->
+  <line x1="50" y1="10" x2="50" y2="90" stroke="#ffffff" stroke-width="10" stroke-linecap="round" />
+  <line x1="10" y1="50" x2="90" y2="50" stroke="#ffffff" stroke-width="10" stroke-linecap="round" />
+  <!-- Solid central knob -->
+  <circle cx="50" cy="50" r="18" fill="#ffffff" />
+  <!-- Small dark center dot -->
+  <circle cx="50" cy="50" r="6" fill="#1e293b" />
 </svg>
