@@ -110,7 +110,7 @@ export function RecurringStatusCard({
     // from the newest categorized transaction linked to the schedule
     const inferredCategories = spentData?.scheduleCategories ?? {};
     const remainingByCategory = new Map<string, number>();
-    const unpaidSchedulesByCategory = new Map<string, { id: string; name: string; amount: number }[]>();
+    const unpaidSchedulesByCategory = new Map<string, { id: string; name: string; amount: number; date: string }[]>();
 
     for (const schedule of schedules) {
       if (schedule.completed) continue;
@@ -141,16 +141,21 @@ export function RecurringStatusCard({
         id: schedule.id,
         name: displayName,
         amount: expenseAmount,
+        date: schedule.next_date,
       });
     }
 
-    const rows = categoryIds.map(id => ({
-      id,
-      name: categoryById.get(id)?.name ?? t('Unknown'),
-      paid: paidByCategory.get(id) ?? 0,
-      remaining: remainingByCategory.get(id) ?? 0,
-      unpaidSchedules: unpaidSchedulesByCategory.get(id) ?? [],
-    }));
+    const rows = categoryIds.map(id => {
+      const unpaid = unpaidSchedulesByCategory.get(id) ?? [];
+      unpaid.sort((a, b) => a.date.localeCompare(b.date));
+      return {
+        id,
+        name: categoryById.get(id)?.name ?? t('Unknown'),
+        paid: paidByCategory.get(id) ?? 0,
+        remaining: remainingByCategory.get(id) ?? 0,
+        unpaidSchedules: unpaid,
+      };
+    });
 
     return {
       rowsByCategory: rows,
@@ -325,7 +330,15 @@ export function RecurringStatusCard({
               </View>
             </View>
 
-            <View style={{ flex: 1, marginTop: 10, gap: 8, overflowY: 'auto' }}>
+            <View
+              style={{
+                flex: 1,
+                marginTop: 10,
+                gap: 8,
+                overflowY: 'auto',
+                paddingRight: 8,
+              }}
+            >
               {rowsByCategory.map(row => (
                 <View key={row.id} style={{ flexShrink: 0, gap: 2 }}>
                   <View
@@ -382,45 +395,48 @@ export function RecurringStatusCard({
                   </View>
 
                   {/* Breakdown of unpaid items in this category */}
-                  {row.unpaidSchedules.map(item => (
-                    <View
-                      key={item.id}
-                      style={{
-                        flexDirection: 'row',
-                        paddingLeft: 12,
-                        alignItems: 'baseline',
-                        gap: 8,
-                      }}
-                    >
+                  {row.unpaidSchedules.map(item => {
+                    const formattedDate = monthUtils.format(item.date, 'dd.MM');
+                    return (
                       <View
+                        key={item.id}
                         style={{
-                          ...styles.verySmallText,
-                          color: theme.pageTextSubdued,
-                          flex: 1,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: 'block',
+                          flexDirection: 'row',
+                          paddingLeft: 12,
+                          alignItems: 'baseline',
+                          gap: 8,
                         }}
                       >
-                        • {item.name}
+                        <View
+                          style={{
+                            ...styles.verySmallText,
+                            color: theme.pageTextSubdued,
+                            flex: 1,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: 'block',
+                          }}
+                        >
+                          • {formattedDate} — {item.name}
+                        </View>
+                        <View
+                          style={{
+                            ...styles.verySmallText,
+                            color: theme.reportsNumberNegative,
+                            width: 76,
+                            textAlign: 'right',
+                          }}
+                        >
+                          <PrivacyFilter>
+                            <FinancialText>
+                              {format(item.amount, 'financial')}
+                            </FinancialText>
+                          </PrivacyFilter>
+                        </View>
                       </View>
-                      <View
-                        style={{
-                          ...styles.verySmallText,
-                          color: theme.reportsNumberNegative,
-                          width: 76,
-                          textAlign: 'right',
-                        }}
-                      >
-                        <PrivacyFilter>
-                          <FinancialText>
-                            {format(item.amount, 'financial')}
-                          </FinancialText>
-                        </PrivacyFilter>
-                      </View>
-                    </View>
-                  ))}
+                    );
+                  })}
                 </View>
               ))}
             </View>

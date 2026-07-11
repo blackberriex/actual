@@ -199,6 +199,7 @@ export function TopCategoriesCard({
                 marginTop: 12,
                 gap: 8,
                 overflowY: 'auto',
+                paddingRight: 8,
               }}
             >
               {rows.map(row => {
