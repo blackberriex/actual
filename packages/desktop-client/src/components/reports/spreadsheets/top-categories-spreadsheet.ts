@@ -16,8 +16,9 @@ export type TopCategoriesData = {
   end: string;
 };
 
-export function topCategoriesSpreadsheet() {
-  const month = monthUtils.currentMonth();
+export function topCategoriesSpreadsheet(pastMonths: number = 0) {
+  const currentMonth = monthUtils.currentMonth();
+  const startMonth = monthUtils.subMonths(currentMonth, pastMonths);
 
   return async (
     spreadsheet: ReturnType<typeof useSpreadsheet>,
@@ -40,8 +41,8 @@ export function topCategoriesSpreadsheet() {
           .filter({ $and: filters })
           .filter({
             $and: [
-              { date: { $transform: '$month', $gte: month } },
-              { date: { $transform: '$month', $lte: month } },
+              { date: { $transform: '$month', $gte: startMonth } },
+              { date: { $transform: '$month', $lte: currentMonth } },
               { amount: { $lt: 0 } },
               { 'account.offbudget': false },
             ],
@@ -59,7 +60,7 @@ export function topCategoriesSpreadsheet() {
 
     setData({
       rows: data.data,
-      start: monthUtils.firstDayOfMonth(month),
+      start: monthUtils.firstDayOfMonth(startMonth),
       end: monthUtils.currentDay(),
     });
   };

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Select } from '@actual-app/components/select';
 import { styles } from '@actual-app/components/styles';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
@@ -42,8 +43,8 @@ export function TopCategoriesCard({
   const { data: categoryViews = { grouped: [], list: [] } } = useCategories();
   const categories = categoryViews.list;
 
-  const params = useMemo(() => topCategoriesSpreadsheet(), []);
-  const data = useReport('top-categories', params);
+  const params = useMemo(() => topCategoriesSpreadsheet(meta?.pastMonths ?? 0), [meta?.pastMonths]);
+  const data = useReport(meta?.pastMonths ? `top-categories-${meta.pastMonths}` : 'top-categories', params);
 
   const [nameMenuOpen, setNameMenuOpen] = useState(false);
   const { menuItems: copyMenuItems, handleMenuSelect: handleCopyMenuSelect } =
@@ -135,6 +136,35 @@ export function TopCategoriesCard({
               onClose={() => setNameMenuOpen(false)}
             />
             {data && <DateRange start={data.start} end={data.end} />}
+            {isEditing && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5, gap: 5 }}>
+                <View style={{ ...styles.smallText, color: theme.pageTextSubdued }}>{t('Period')}:</View>
+                <Select
+                  value={String(meta?.pastMonths ?? 0)}
+                  onChange={val => {
+                    onMetaChange({
+                      ...meta,
+                      pastMonths: parseInt(val, 10),
+                    });
+                  }}
+                  options={[
+                    ['0', t('Current month')],
+                    ['1', t('Last 2 months')],
+                    ['2', t('Last 3 months')],
+                    ['5', t('Last 6 months')],
+                    ['11', t('Last 12 months')],
+                  ]}
+                  style={{
+                    padding: '2px 4px',
+                    fontSize: 11,
+                    height: 20,
+                    backgroundColor: theme.tableBackground,
+                    borderColor: theme.tableBorder,
+                    color: theme.pageText,
+                  }}
+                />
+              </View>
+            )}
           </View>
           {data && (
             <View style={{ textAlign: 'right' }}>

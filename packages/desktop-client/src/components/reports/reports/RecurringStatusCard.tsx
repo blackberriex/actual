@@ -28,6 +28,7 @@ import { useReport } from '#components/reports/useReport';
 import { useCategories } from '#hooks/useCategories';
 import { useFormat } from '#hooks/useFormat';
 import { getSchedulesQuery, useSchedules } from '#hooks/useSchedules';
+import { usePayeesById } from '#hooks/usePayees';
 
 function getScheduleCategory(schedule: ScheduleEntity): string | null {
   const actions = schedule._actions;
@@ -69,6 +70,7 @@ export function RecurringStatusCard({
   const format = useFormat();
   const { data: categoryViews = { grouped: [], list: [] } } = useCategories();
   const { list: categories, grouped: categoryGroups } = categoryViews;
+  const { data: payeesById = {} } = usePayeesById();
 
   const categoryIds = useMemo(
     () => meta?.categoryIds ?? [],
@@ -108,6 +110,8 @@ export function RecurringStatusCard({
     // from the newest categorized transaction linked to the schedule
     const inferredCategories = spentData?.scheduleCategories ?? {};
     const remainingByCategory = new Map<string, number>();
+    const unpaidSchedulesByCategory = new Map<string, { id: string; name: string; amount: number }[]>();
+
     for (const schedule of schedules) {
       if (schedule.completed) continue;
       const scheduleCategory =
@@ -118,10 +122,26 @@ export function RecurringStatusCard({
       if (status === 'paid' || status === 'completed') continue;
       const amount = getScheduledAmount(schedule._amount);
       if (amount >= 0) continue; // only expense schedules
+      
+      const expenseAmount = -amount;
       remainingByCategory.set(
         scheduleCategory,
-        (remainingByCategory.get(scheduleCategory) ?? 0) - amount,
+        (remainingByCategory.get(scheduleCategory) ?? 0) + expenseAmount,
       );
+
+      const payeeName = schedule._payee && payeesById[schedule._payee]
+        ? payeesById[schedule._payee].name
+        : '';
+      const displayName = schedule.name || payeeName || t('Unknown schedule');
+
+      if (!unpaidSchedulesByCategory.has(scheduleCategory)) {
+        unpaidSchedulesByCategory.set(scheduleCategory, []);
+      }
+      unpaidSchedulesByCategory.get(scheduleCategory)!.push({
+        id: schedule.id,
+        name: displayName,
+        amount: expenseAmount,
+      });
     }
 
     const rows = categoryIds.map(id => ({
@@ -129,6 +149,7 @@ export function RecurringStatusCard({
       name: categoryById.get(id)?.name ?? t('Unknown'),
       paid: paidByCategory.get(id) ?? 0,
       remaining: remainingByCategory.get(id) ?? 0,
+      unpaidSchedules: unpaidSchedulesByCategory.get(id) ?? [],
     }));
 
     return {
@@ -136,7 +157,7 @@ export function RecurringStatusCard({
       totalPaid: rows.reduce((sum, row) => sum + row.paid, 0),
       totalRemaining: rows.reduce((sum, row) => sum + row.remaining, 0),
     };
-  }, [categoryIds, categories, spentData, schedules, statuses, currentMonth, t]);
+  }, [categoryIds, categories, spentData, schedules, statuses, currentMonth, payeesById, t]);
 
   const isLoading = !spentData || schedulesLoading;
 
@@ -304,61 +325,102 @@ export function RecurringStatusCard({
               </View>
             </View>
 
-            <View style={{ flex: 1, marginTop: 10, gap: 5, overflowY: 'auto' }}>
+            <View style={{ flex: 1, marginTop: 10, gap: 8, overflowY: 'auto' }}>
               {rowsByCategory.map(row => (
-                <View
-                  key={row.id}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'baseline',
-                    gap: 8,
-                    flexShrink: 0,
-                  }}
-                >
+                <View key={row.id} style={{ flexShrink: 0, gap: 2 }}>
                   <View
                     style={{
-                      ...styles.smallText,
-                      flex: 1,
-                      color: theme.pageText,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: 'block',
+                      flexDirection: 'row',
+                      alignItems: 'baseline',
+                      gap: 8,
                     }}
                   >
-                    {row.name}
+                    <View
+                      style={{
+                        ...styles.smallText,
+                        flex: 1,
+                        color: theme.pageText,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: 'block',
+                      }}
+                    >
+                      {row.name}
+                    </View>
+                    <View
+                      style={{
+                        ...styles.smallText,
+                        color: theme.pageTextSubdued,
+                      }}
+                    >
+                      <PrivacyFilter>
+                        <FinancialText>
+                          {format(row.paid, 'financial')}
+                        </FinancialText>
+                      </PrivacyFilter>
+                    </View>
+                    <View
+                      style={{
+                        ...styles.smallText,
+                        width: 76,
+                        textAlign: 'right',
+                        color:
+                          row.remaining > 0
+                            ? theme.reportsNumberNegative
+                            : theme.pageTextSubdued,
+                      }}
+                    >
+                      <PrivacyFilter>
+                        <FinancialText>
+                          {row.remaining > 0
+                            ? format(row.remaining, 'financial')
+                            : '✓'}
+                        </FinancialText>
+                      </PrivacyFilter>
+                    </View>
                   </View>
-                  <View
-                    style={{
-                      ...styles.smallText,
-                      color: theme.pageTextSubdued,
-                    }}
-                  >
-                    <PrivacyFilter>
-                      <FinancialText>
-                        {format(row.paid, 'financial')}
-                      </FinancialText>
-                    </PrivacyFilter>
-                  </View>
-                  <View
-                    style={{
-                      ...styles.smallText,
-                      width: 76,
-                      textAlign: 'right',
-                      color:
-                        row.remaining > 0
-                          ? theme.reportsNumberNegative
-                          : theme.pageTextSubdued,
-                    }}
-                  >
-                    <PrivacyFilter>
-                      <FinancialText>
-                        {row.remaining > 0
-                          ? format(row.remaining, 'financial')
-                          : '✓'}
-                      </FinancialText>
-                    </PrivacyFilter>
-                  </View>
+
+                  {/* Breakdown of unpaid items in this category */}
+                  {row.unpaidSchedules.map(item => (
+                    <View
+                      key={item.id}
+                      style={{
+                        flexDirection: 'row',
+                        paddingLeft: 12,
+                        alignItems: 'baseline',
+                        gap: 8,
+                      }}
+                    >
+                      <View
+                        style={{
+                          ...styles.verySmallText,
+                          color: theme.pageTextSubdued,
+                          flex: 1,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: 'block',
+                        }}
+                      >
+                        • {item.name}
+                      </View>
+                      <View
+                        style={{
+                          ...styles.verySmallText,
+                          color: theme.reportsNumberNegative,
+                          width: 76,
+                          textAlign: 'right',
+                        }}
+                      >
+                        <PrivacyFilter>
+                          <FinancialText>
+                            {format(item.amount, 'financial')}
+                          </FinancialText>
+                        </PrivacyFilter>
+                      </View>
+                    </View>
+                  ))}
                 </View>
               ))}
             </View>
