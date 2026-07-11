@@ -148,19 +148,9 @@ function EditableBudgetName() {
           style={{
             marginRight: 10,
             color: '#FFFFFF',
-            animation: 'safe-spin 15s linear infinite',
             flexShrink: 0,
           }}
         >
-          <style>{`
-            @keyframes safe-spin {
-              from { transform: rotate(0deg); }
-              to { transform: rotate(360deg); }
-            }
-            svg:hover {
-              animation-duration: 3s !important;
-            }
-          `}</style>
           {/* Outer dial ring */}
           <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="6" fill="none" opacity="0.9" />
           
