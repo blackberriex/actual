@@ -133,12 +133,66 @@ function EditableBudgetName() {
           marginLeft: -5,
           flex: '0 auto',
           fontFamily: 'var(--font-family-display)',
+          flexDirection: 'row',
+          alignItems: 'center',
         }}
         onPress={() => {
           resetPosition();
           setMenuOpen(true);
         }}
       >
+        <svg
+          width="26"
+          height="26"
+          viewBox="0 0 100 100"
+          style={{
+            marginRight: 10,
+            color: '#FFFFFF',
+            animation: 'safe-spin 15s linear infinite',
+            flexShrink: 0,
+          }}
+        >
+          <style>{`
+            @keyframes safe-spin {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+            svg:hover {
+              animation-duration: 3s !important;
+            }
+          `}</style>
+          {/* Outer dial ring */}
+          <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="6" fill="none" opacity="0.9" />
+          
+          {/* Ticks (every 30 degrees) */}
+          {[...Array(12)].map((_, i) => {
+            const angle = i * 30;
+            return (
+              <line
+                key={i}
+                x1="50"
+                y1="10"
+                x2="50"
+                y2="15"
+                stroke="currentColor"
+                strokeWidth="4"
+                transform={`rotate(${angle} 50 50)`}
+              />
+            );
+          })}
+          
+          {/* Middle dial disk */}
+          <circle cx="50" cy="50" r="28" stroke="currentColor" strokeWidth="4" fill="none" />
+          
+          {/* Inner solid knob */}
+          <circle cx="50" cy="50" r="16" fill="currentColor" />
+          
+          {/* Pointer indicator line */}
+          <line x1="50" y1="50" x2="50" y2="28" stroke="#000000" strokeWidth="5" strokeLinecap="round" />
+          
+          {/* Pointer dot on the pointer line */}
+          <circle cx="50" cy="34" r="3" fill="#FFFFFF" />
+        </svg>
         <Text style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
           {budgetName || t('Unnamed')}
         </Text>
