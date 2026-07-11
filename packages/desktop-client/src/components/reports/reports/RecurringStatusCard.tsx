@@ -25,10 +25,12 @@ import { ReportCardName } from '#components/reports/ReportCardName';
 import { recurringSpentSpreadsheet } from '#components/reports/spreadsheets/recurring-status-spreadsheet';
 import { useDashboardWidgetCopyMenu } from '#components/reports/useDashboardWidgetCopyMenu';
 import { useReport } from '#components/reports/useReport';
+import { send } from '@actual-app/core/platform/client/connection';
 import { useCategories } from '#hooks/useCategories';
 import { useFormat } from '#hooks/useFormat';
 import { getSchedulesQuery, useSchedules } from '#hooks/useSchedules';
 import { usePayeesById } from '#hooks/usePayees';
+import { useAccounts } from '#hooks/useAccounts';
 
 function getScheduleCategory(schedule: ScheduleEntity): string | null {
   const actions = schedule._actions;
@@ -71,6 +73,28 @@ export function RecurringStatusCard({
   const { data: categoryViews = { grouped: [], list: [] } } = useCategories();
   const { list: categories, grouped: categoryGroups } = categoryViews;
   const { data: payeesById = {} } = usePayeesById();
+  const { data: accounts = [] } = useAccounts();
+
+  const [pbPurchaseRate, setPbPurchaseRate] = useState<number | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    async function getRate() {
+      try {
+        const todayStr = monthUtils.currentDay();
+        const res = await send('tools/pb-exchange-rate', { date: todayStr });
+        if (res && res.purchaseRate && active) {
+          setPbPurchaseRate(res.purchaseRate);
+        }
+      } catch (e) {
+        console.error('Failed to fetch PrivatBank exchange rate in RecurringStatusCard:', e);
+      }
+    }
+    getRate();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const categoryIds = useMemo(
     () => meta?.categoryIds ?? [],
@@ -105,55 +129,82 @@ export function RecurringStatusCard({
       }
     }
 
+    const rate = pbPurchaseRate || 40.5;
+
     // schedules still due this month in the selected categories;
     // category comes from the rule's set-category action or, failing that,
     // from the newest categorized transaction linked to the schedule
     const inferredCategories = spentData?.scheduleCategories ?? {};
     const remainingByCategory = new Map<string, number>();
-    const unpaidSchedulesByCategory = new Map<string, { id: string; name: string; amount: number; date: string }[]>();
+    const schedulesBreakdownByCategory = new Map<string, { id: string; name: string; amount: number; date: string; isPaid: boolean }[]>();
 
     for (const schedule of schedules) {
       if (schedule.completed) continue;
       const scheduleCategory =
         getScheduleCategory(schedule) ?? inferredCategories[schedule.id];
       if (!scheduleCategory || !idSet.has(scheduleCategory)) continue;
-      if (monthUtils.getMonth(schedule.next_date) !== currentMonth) continue;
-      const status = statuses.get(schedule.id);
-      if (status === 'paid' || status === 'completed') continue;
+
+      const account = accounts.find(a => a.id === schedule._account);
+      const isUsd = account && account.name?.toLowerCase().includes('usd');
       const amount = getScheduledAmount(schedule._amount);
       if (amount >= 0) continue; // only expense schedules
-      
-      const expenseAmount = -amount;
-      remainingByCategory.set(
-        scheduleCategory,
-        (remainingByCategory.get(scheduleCategory) ?? 0) + expenseAmount,
-      );
+
+      const expenseAmountUSD = -amount;
+      const expenseAmountUAH = isUsd ? Math.round(expenseAmountUSD * rate) : expenseAmountUSD;
 
       const payeeName = schedule._payee && payeesById[schedule._payee]
         ? payeesById[schedule._payee].name
         : '';
-      const displayName = schedule.name || payeeName || t('Unknown schedule');
+      
+      const originalAmountSuffix = isUsd ? ` ($${(expenseAmountUSD / 100).toFixed(2)})` : '';
+      const displayName = (schedule.name || payeeName || t('Unknown schedule')) + originalAmountSuffix;
 
-      if (!unpaidSchedulesByCategory.has(scheduleCategory)) {
-        unpaidSchedulesByCategory.set(scheduleCategory, []);
+      // Check if it was paid this month
+      const paidInfo = spentData?.paidSchedules?.[schedule.id];
+      if (paidInfo) {
+        if (!schedulesBreakdownByCategory.has(scheduleCategory)) {
+          schedulesBreakdownByCategory.set(scheduleCategory, []);
+        }
+        schedulesBreakdownByCategory.get(scheduleCategory)!.push({
+          id: schedule.id,
+          name: displayName,
+          amount: paidInfo.amount,
+          date: paidInfo.date,
+          isPaid: true,
+        });
+      } else {
+        if (monthUtils.getMonth(schedule.next_date) === currentMonth) {
+          const status = statuses.get(schedule.id);
+          if (status !== 'paid' && status !== 'completed') {
+            remainingByCategory.set(
+              scheduleCategory,
+              (remainingByCategory.get(scheduleCategory) ?? 0) + expenseAmountUAH,
+            );
+
+            if (!schedulesBreakdownByCategory.has(scheduleCategory)) {
+              schedulesBreakdownByCategory.set(scheduleCategory, []);
+            }
+            schedulesBreakdownByCategory.get(scheduleCategory)!.push({
+              id: schedule.id,
+              name: displayName,
+              amount: expenseAmountUAH,
+              date: schedule.next_date,
+              isPaid: false,
+            });
+          }
+        }
       }
-      unpaidSchedulesByCategory.get(scheduleCategory)!.push({
-        id: schedule.id,
-        name: displayName,
-        amount: expenseAmount,
-        date: schedule.next_date,
-      });
     }
 
     const rows = categoryIds.map(id => {
-      const unpaid = unpaidSchedulesByCategory.get(id) ?? [];
-      unpaid.sort((a, b) => a.date.localeCompare(b.date));
+      const breakdown = schedulesBreakdownByCategory.get(id) ?? [];
+      breakdown.sort((a, b) => a.date.localeCompare(b.date));
       return {
         id,
         name: categoryById.get(id)?.name ?? t('Unknown'),
         paid: paidByCategory.get(id) ?? 0,
         remaining: remainingByCategory.get(id) ?? 0,
-        unpaidSchedules: unpaid,
+        unpaidSchedules: breakdown,
       };
     });
 
@@ -162,7 +213,7 @@ export function RecurringStatusCard({
       totalPaid: rows.reduce((sum, row) => sum + row.paid, 0),
       totalRemaining: rows.reduce((sum, row) => sum + row.remaining, 0),
     };
-  }, [categoryIds, categories, spentData, schedules, statuses, currentMonth, payeesById, t]);
+  }, [categoryIds, categories, spentData, schedules, statuses, currentMonth, payeesById, accounts, pbPurchaseRate, t]);
 
   const isLoading = !spentData || schedulesLoading;
 
@@ -416,14 +467,15 @@ export function RecurringStatusCard({
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             display: 'block',
+                            textDecorationLine: item.isPaid ? 'line-through' : 'none',
                           }}
                         >
-                          • {formattedDate} — {item.name}
+                          {item.isPaid ? '✓' : '•'} {formattedDate} — {item.name}
                         </View>
                         <View
                           style={{
                             ...styles.verySmallText,
-                            color: theme.reportsNumberNegative,
+                            color: item.isPaid ? theme.pageTextSubdued : theme.reportsNumberNegative,
                             width: 76,
                             textAlign: 'right',
                           }}

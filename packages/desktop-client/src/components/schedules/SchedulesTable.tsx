@@ -129,15 +129,18 @@ function OverflowMenu({
 export function ScheduleAmountCell({
   amount,
   op,
+  isUsd,
 }: {
   amount: ScheduleEntity['_amount'];
   op: ScheduleEntity['_amountOp'];
+  isUsd?: boolean;
 }) {
   const { t } = useTranslation();
   const format = useFormat();
 
   const num = getScheduledAmount(amount);
-  const currencyAmount = format(Math.abs(num || 0), 'financial');
+  const suffix = isUsd ? ' $' : '';
+  const currencyAmount = format(Math.abs(num || 0), 'financial') + suffix;
   const isApprox = op === 'isapprox';
   const isBetween = op === 'isbetween';
   let cellText = '';
@@ -147,8 +150,8 @@ export function ScheduleAmountCell({
     });
   } else if (isBetween && typeof amount != 'number') {
     cellText = t('{{currency1}} to {{currency2}}', {
-      currency1: format(Math.abs(amount.num1 || 0), 'financial'),
-      currency2: format(Math.abs(amount.num2 || 0), 'financial'),
+      currency1: format(Math.abs(amount.num1 || 0), 'financial') + suffix,
+      currency2: format(Math.abs(amount.num2 || 0), 'financial') + suffix,
     });
   } else {
     cellText = currencyAmount;
@@ -216,14 +219,18 @@ function ScheduleRow({
   minimal,
   statuses,
   dateFormat,
+  accounts,
 }: {
   schedule: ScheduleEntity;
   dateFormat: string;
+  accounts: any[];
 } & Pick<
   SchedulesTableProps,
   'onSelect' | 'onAction' | 'minimal' | 'statuses'
 >) {
   const { t } = useTranslation();
+  const account = accounts.find(a => a.id === schedule._account);
+  const isUsd = account && account.name?.toLowerCase().includes('usd');
 
   const rowRef = useRef(null);
   const buttonRef = useRef(null);
@@ -297,7 +304,7 @@ function ScheduleRow({
       <Field width={120} name="status" style={{ alignItems: 'flex-start' }}>
         <StatusBadge status={statuses.get(schedule.id)} />
       </Field>
-      <ScheduleAmountCell amount={schedule._amount} op={schedule._amountOp} />
+      <ScheduleAmountCell amount={schedule._amount} op={schedule._amountOp} isUsd={isUsd} />
       {!minimal && (
         <Field width={80} style={{ textAlign: 'center' }}>
           {schedule._date &&
@@ -436,6 +443,7 @@ export function SchedulesTable({
     return (
       <ScheduleRow
         schedule={item as ScheduleEntity}
+        accounts={accounts}
         {...{ statuses, dateFormat, onSelect, onAction, minimal }}
       />
     );

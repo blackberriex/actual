@@ -12,9 +12,9 @@ export type RecurringSpentRow = {
 export type RecurringSpentData = {
   rows: RecurringSpentRow[];
   // schedule id -> category id, inferred from the latest categorized
-  // transaction linked to the schedule (schedules carry no category
-  // themselves unless their rule has an explicit set-category action)
+  // transaction linked to the schedule
   scheduleCategories: Record<string, string>;
+  paidSchedules: Record<string, { date: string; amount: number }>;
   start: string;
   end: string;
 };
@@ -30,6 +30,7 @@ export function recurringSpentSpreadsheet(categoryIds: string[]) {
       setData({
         rows: [],
         scheduleCategories: {},
+        paidSchedules: {},
         start: monthUtils.firstDayOfMonth(month),
         end: monthUtils.currentDay(),
       });
@@ -62,6 +63,7 @@ export function recurringSpentSpreadsheet(categoryIds: string[]) {
     // infer each schedule's category from its schedule-linked transactions
     // (newest categorized one wins); look back 6 months
     const scheduleCategories: Record<string, string> = {};
+    const paidSchedules: Record<string, { date: string; amount: number }> = {};
     try {
       const linked = await aqlQuery(
         q('transactions')
@@ -80,12 +82,21 @@ export function recurringSpentSpreadsheet(categoryIds: string[]) {
             { schedule: { $id: '$schedule.id' } },
             { category: { $id: '$category.id' } },
             'date',
+            'amount',
           ])
           .orderBy({ date: 'desc' }),
       );
       for (const row of linked.data) {
-        if (row.schedule && row.category && !scheduleCategories[row.schedule]) {
-          scheduleCategories[row.schedule] = row.category;
+        if (row.schedule && row.category) {
+          if (!scheduleCategories[row.schedule]) {
+            scheduleCategories[row.schedule] = row.category;
+          }
+          if (monthUtils.getMonth(row.date) === month && !paidSchedules[row.schedule]) {
+            paidSchedules[row.schedule] = {
+              date: row.date,
+              amount: -row.amount, // positive expense amount
+            };
+          }
         }
       }
     } catch (error) {
@@ -95,6 +106,7 @@ export function recurringSpentSpreadsheet(categoryIds: string[]) {
     setData({
       rows: data.data,
       scheduleCategories,
+      paidSchedules,
       start: monthUtils.firstDayOfMonth(month),
       end: monthUtils.currentDay(),
     });
