@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Dialog, DialogTrigger } from 'react-aria-components';
 import { useTranslation } from 'react-i18next';
 
@@ -173,7 +173,10 @@ export function RecurringStatusCard({
           isPaid: true,
         });
       } else {
-        if (monthUtils.getMonth(schedule.next_date) === currentMonth) {
+        const nextDateMonth = schedule.next_date
+          ? monthUtils.getMonth(schedule.next_date)
+          : null;
+        if (nextDateMonth === currentMonth) {
           const status = statuses.get(schedule.id);
           if (status !== 'paid' && status !== 'completed') {
             remainingByCategory.set(
