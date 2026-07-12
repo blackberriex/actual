@@ -155,23 +155,27 @@ function EditableBudgetName() {
             flexShrink: 0,
           }}
         >
-          {/* Inner solid hub */}
-          <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+          {/* Safe Body (Outer Box) */}
+          <rect x="3.5" y="3" width="17" height="18" rx="2.5" />
           
-          {/* Outer wheel ring */}
-          <circle cx="12" cy="12" r="7.5" />
+          {/* Safe Door panel outline (inset door seam) */}
+          <rect x="5.5" y="5" width="13" height="14" rx="1.5" strokeWidth="1.2" opacity="0.8" />
           
-          {/* Top spoke */}
-          <line x1="12" y1="9" x2="12" y2="2.5" />
-          <circle cx="12" cy="2.5" r="1.5" fill="currentColor" stroke="none" />
+          {/* Combination Dial Wheel (Centered on the door) */}
+          <circle cx="12" cy="12" r="3.8" />
           
-          {/* Bottom right spoke (120 degrees) */}
-          <line x1="14.6" y1="13.5" x2="20.2" y2="16.8" />
-          <circle cx="20.2" cy="16.8" r="1.5" fill="currentColor" stroke="none" />
+          {/* Dial Pointer Tick (Index mark at 12 o'clock) */}
+          <line x1="12" y1="5" x2="12" y2="6.5" strokeWidth="1.2" />
           
-          {/* Bottom left spoke (240 degrees) */}
-          <line x1="9.4" y1="13.5" x2="3.8" y2="16.8" />
-          <circle cx="3.8" cy="16.8" r="1.5" fill="currentColor" stroke="none" />
+          {/* Dial pointer line pointing up-right */}
+          <line x1="12" y1="12" x2="13.8" y2="9.5" strokeWidth="1.5" />
+          
+          {/* Central Spindle Dot */}
+          <circle cx="12" cy="12" r="0.8" fill="currentColor" stroke="none" />
+          
+          {/* Safe Door Hinges (left side) */}
+          <line x1="1.5" y1="7" x2="3.5" y2="7" />
+          <line x1="1.5" y1="17" x2="3.5" y2="17" />
         </svg>
         <Text style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
           {budgetName || t('Unnamed')}
