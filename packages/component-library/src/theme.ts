@@ -52,6 +52,7 @@ export const theme = {
   sidebarItemTextUpdated: 'var(--color-sidebarItemTextUpdated)',
   sidebarItemTextSelected: 'var(--color-sidebarItemTextSelected)',
   sidebarBudgetName: 'var(--color-sidebarBudgetName)',
+  vaultLogo: 'var(--color-vaultLogo)',
   menuBackground: 'var(--color-menuBackground)',
   menuItemBackground: 'var(--color-menuItemBackground)',
   menuItemBackgroundHover: 'var(--color-menuItemBackgroundHover)',

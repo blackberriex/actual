@@ -1,12 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Steel blue background circle -->
-  <circle cx="50" cy="50" r="48" fill="#1e293b" />
-  <!-- Square Safe Vault Body -->
-  <rect x="22" y="22" width="56" height="56" rx="10" stroke="#ffffff" stroke-width="10" fill="none" />
-  <!-- Dial Outer Ring -->
-  <circle cx="50" cy="50" r="16" stroke="#ffffff" stroke-width="8" fill="none" />
-  <!-- Dial Center Knob -->
-  <circle cx="50" cy="50" r="6" fill="#ffffff" />
-  <!-- Lock Indicator Tick (Top) -->
-  <line x1="50" y1="22" x2="50" y2="30" stroke="#ffffff" stroke-width="6" stroke-linecap="round" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="9 8 144 144">
+  <style>
+    path {
+      fill: #ffd814;
+      fill-rule: evenodd;
+    }
+    @media (prefers-color-scheme: light) {
+      path {
+        fill: #d97706;
+      }
+    }
+  </style>
+  <path d="M25.5,28.58,80.8,136.22,136.5,28.58ZM72.2,71.31H63.39V62.5H72.2Zm0-13.22H63.39v-8.8H72.2ZM85.41,84.52H76.6V75.71h8.81Zm0-13.21H76.6V62.5h8.81Zm0-13.22H76.6v-8.8h8.81ZM98.55,71.31H89.74V62.5h8.81ZM89.74,58.09v-8.8h8.81v8.8Z" />
 </svg>

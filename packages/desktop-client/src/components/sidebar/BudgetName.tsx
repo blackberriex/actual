@@ -142,46 +142,18 @@ function EditableBudgetName() {
         }}
       >
         <svg
-          width="26"
-          height="26"
-          viewBox="0 0 100 100"
+          width="24"
+          height="24"
+          viewBox="9 8 144 144"
           style={{
             marginRight: 10,
-            color: '#FFFFFF',
             flexShrink: 0,
           }}
         >
-          {/* Outer dial ring */}
-          <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="6" fill="none" opacity="0.9" />
-          
-          {/* Ticks (every 30 degrees) */}
-          {[...Array(12)].map((_, i) => {
-            const angle = i * 30;
-            return (
-              <line
-                key={i}
-                x1="50"
-                y1="10"
-                x2="50"
-                y2="15"
-                stroke="currentColor"
-                strokeWidth="4"
-                transform={`rotate(${angle} 50 50)`}
-              />
-            );
-          })}
-          
-          {/* Middle dial disk */}
-          <circle cx="50" cy="50" r="28" stroke="currentColor" strokeWidth="4" fill="none" />
-          
-          {/* Inner solid knob */}
-          <circle cx="50" cy="50" r="16" fill="currentColor" />
-          
-          {/* Pointer indicator line */}
-          <line x1="50" y1="50" x2="50" y2="28" stroke="#000000" strokeWidth="5" strokeLinecap="round" />
-          
-          {/* Pointer dot on the pointer line */}
-          <circle cx="50" cy="34" r="3" fill="#FFFFFF" />
+          <path
+            fill={theme.vaultLogo}
+            d="M25.5,28.58,80.8,136.22,136.5,28.58ZM72.2,71.31H63.39V62.5H72.2Zm0-13.22H63.39v-8.8H72.2ZM85.41,84.52H76.6V75.71h8.81Zm0-13.21H76.6V62.5h8.81Zm0-13.22H76.6v-8.8h8.81ZM98.55,71.31H89.74V62.5h8.81ZM89.74,58.09v-8.8h8.81v8.8Z"
+          />
         </svg>
         <Text style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
           {budgetName || t('Unnamed')}
