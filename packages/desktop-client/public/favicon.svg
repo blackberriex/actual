@@ -9,25 +9,25 @@
       }
     }
   </style>
-  {/* Safe Body (Outer Box) */}
+  <!-- Safe Body -->
   <rect x="3.5" y="3" width="17" height="18" rx="2.5" />
   
-  {/* Safe Door panel outline (inset door seam) */}
+  <!-- Safe Door panel -->
   <rect x="5.5" y="5" width="13" height="14" rx="1.5" stroke-width="1.2" opacity="0.8" />
   
-  {/* Combination Dial Wheel (Centered on the door) */}
+  <!-- Dial Wheel -->
   <circle cx="12" cy="12" r="3.8" />
   
-  {/* Dial Pointer Tick (Index mark at 12 o'clock) */}
+  <!-- Dial Pointer Tick -->
   <line x1="12" y1="5" x2="12" y2="6.5" stroke-width="1.2" />
   
-  {/* Dial pointer line pointing up-right */}
+  <!-- Dial pointer line -->
   <line x1="12" y1="12" x2="13.8" y2="9.5" stroke-width="1.5" />
   
-  {/* Central Spindle Dot */}
+  <!-- Central Spindle -->
   <circle cx="12" cy="12" r="0.8" fill="currentColor" stroke="none" />
   
-  {/* Safe Door Hinges (left side) */}
+  <!-- Hinges -->
   <line x1="1.5" y1="7" x2="3.5" y2="7" />
   <line x1="1.5" y1="17" x2="3.5" y2="17" />
 </svg>
