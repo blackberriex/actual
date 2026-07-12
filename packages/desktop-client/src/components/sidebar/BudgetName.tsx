@@ -142,11 +142,11 @@ function EditableBudgetName() {
         }}
       >
         <svg
-          width="22"
-          height="22"
+          width="26"
+          height="26"
           viewBox="0 0 100 100"
           style={{
-            marginRight: 10,
+            marginRight: 7,
             flexShrink: 0,
             transform: 'translateY(1px)', // perfectly center align with bold text baseline
           }}
