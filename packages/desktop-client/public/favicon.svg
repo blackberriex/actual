@@ -1,13 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Dark steel circle background -->
+  <!-- Steel blue background circle -->
   <circle cx="50" cy="50" r="48" fill="#1e293b" />
-  <!-- Thick outer ring -->
-  <circle cx="50" cy="50" r="32" stroke="#ffffff" stroke-width="10" fill="none" />
-  <!-- Thick cross handles -->
-  <line x1="50" y1="10" x2="50" y2="90" stroke="#ffffff" stroke-width="10" stroke-linecap="round" />
-  <line x1="10" y1="50" x2="90" y2="50" stroke="#ffffff" stroke-width="10" stroke-linecap="round" />
-  <!-- Solid central knob -->
-  <circle cx="50" cy="50" r="18" fill="#ffffff" />
-  <!-- Small dark center dot -->
-  <circle cx="50" cy="50" r="6" fill="#1e293b" />
+  <!-- Square Safe Vault Body -->
+  <rect x="22" y="22" width="56" height="56" rx="10" stroke="#ffffff" stroke-width="10" fill="none" />
+  <!-- Dial Outer Ring -->
+  <circle cx="50" cy="50" r="16" stroke="#ffffff" stroke-width="8" fill="none" />
+  <!-- Dial Center Knob -->
+  <circle cx="50" cy="50" r="6" fill="#ffffff" />
+  <!-- Lock Indicator Tick (Top) -->
+  <line x1="50" y1="22" x2="50" y2="30" stroke="#ffffff" stroke-width="6" stroke-linecap="round" />
 </svg>
