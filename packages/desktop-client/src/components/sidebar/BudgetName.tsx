@@ -144,38 +144,44 @@ function EditableBudgetName() {
         <svg
           width="22"
           height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          viewBox="0 0 100 100"
           style={{
             marginRight: 10,
             flexShrink: 0,
+            transform: 'translateY(1px)', // perfectly center align with bold text baseline
           }}
         >
-          {/* Safe Body (Outer Box) */}
-          <rect x="3.5" y="3" width="17" height="18" rx="2.5" />
+          {/* Outer dial ring */}
+          <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="6" fill="none" opacity="0.9" />
           
-          {/* Safe Door panel outline (inset door seam) */}
-          <rect x="5.5" y="5" width="13" height="14" rx="1.5" strokeWidth="1.2" opacity="0.8" />
+          {/* Ticks (every 30 degrees) */}
+          {[...Array(12)].map((_, i) => {
+            const angle = i * 30;
+            return (
+              <line
+                key={i}
+                x1="50"
+                y1="10"
+                x2="50"
+                y2="15"
+                stroke="currentColor"
+                strokeWidth="4"
+                transform={`rotate(${angle} 50 50)`}
+              />
+            );
+          })}
           
-          {/* Combination Dial Wheel (Centered on the door) */}
-          <circle cx="12" cy="12" r="3.8" />
+          {/* Middle dial disk */}
+          <circle cx="50" cy="50" r="28" stroke="currentColor" strokeWidth="4" fill="none" />
           
-          {/* Dial Pointer Tick (Index mark at 12 o'clock) */}
-          <line x1="12" y1="5" x2="12" y2="6.5" strokeWidth="1.2" />
+          {/* Inner solid knob */}
+          <circle cx="50" cy="50" r="16" fill="currentColor" />
           
-          {/* Dial pointer line pointing up-right */}
-          <line x1="12" y1="12" x2="13.8" y2="9.5" strokeWidth="1.5" />
+          {/* Pointer indicator line (uses sidebar background color for contrast on the knob) */}
+          <line x1="50" y1="50" x2="50" y2="28" stroke="var(--color-sidebarBackground, #131313)" strokeWidth="6" strokeLinecap="round" />
           
-          {/* Central Spindle Dot */}
-          <circle cx="12" cy="12" r="0.8" fill="currentColor" stroke="none" />
-          
-          {/* Safe Door Hinges (left side) */}
-          <line x1="1.5" y1="7" x2="3.5" y2="7" />
-          <line x1="1.5" y1="17" x2="3.5" y2="17" />
+          {/* Pointer dot on the pointer line (uses currentColor for contrast on the pointer line) */}
+          <circle cx="50" cy="34" r="3.5" fill="currentColor" />
         </svg>
         <Text style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
           {budgetName || t('Unnamed')}

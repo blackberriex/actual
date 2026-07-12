@@ -1,33 +1,55 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <style>
     svg {
       color: #ffffff;
+    }
+    circle.bg {
+      fill: #131313;
+    }
+    line.pointer {
+      stroke: #131313;
     }
     @media (prefers-color-scheme: light) {
       svg {
         color: #161617;
       }
+      circle.bg {
+        fill: #f6f6f7;
+      }
+      line.pointer {
+        stroke: #f6f6f7;
+      }
     }
   </style>
-  <!-- Safe Body -->
-  <rect x="3.5" y="3" width="17" height="18" rx="2.5" />
+  <!-- Background circle so the dial has clean contrast on the browser tab -->
+  <circle class="bg" cx="50" cy="50" r="50" />
+
+  <!-- Outer dial ring -->
+  <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="6" fill="none" opacity="0.9" />
   
-  <!-- Safe Door panel -->
-  <rect x="5.5" y="5" width="13" height="14" rx="1.5" stroke-width="1.2" opacity="0.8" />
+  <!-- Ticks -->
+  <line x1="50" y1="10" x2="50" y2="15" stroke="currentColor" stroke-width="4" />
+  <line x1="50" y1="10" x2="50" y2="15" stroke="currentColor" stroke-width="4" transform="rotate(30 50 50)" />
+  <line x1="50" y1="10" x2="50" y2="15" stroke="currentColor" stroke-width="4" transform="rotate(60 50 50)" />
+  <line x1="50" y1="10" x2="50" y2="15" stroke="currentColor" stroke-width="4" transform="rotate(90 50 50)" />
+  <line x1="50" y1="10" x2="50" y2="15" stroke="currentColor" stroke-width="4" transform="rotate(120 50 50)" />
+  <line x1="50" y1="10" x2="50" y2="15" stroke="currentColor" stroke-width="4" transform="rotate(150 50 50)" />
+  <line x1="50" y1="10" x2="50" y2="15" stroke="currentColor" stroke-width="4" transform="rotate(180 50 50)" />
+  <line x1="50" y1="10" x2="50" y2="15" stroke="currentColor" stroke-width="4" transform="rotate(210 50 50)" />
+  <line x1="50" y1="10" x2="50" y2="15" stroke="currentColor" stroke-width="4" transform="rotate(240 50 50)" />
+  <line x1="50" y1="10" x2="50" y2="15" stroke="currentColor" stroke-width="4" transform="rotate(270 50 50)" />
+  <line x1="50" y1="10" x2="50" y2="15" stroke="currentColor" stroke-width="4" transform="rotate(300 50 50)" />
+  <line x1="50" y1="10" x2="50" y2="15" stroke="currentColor" stroke-width="4" transform="rotate(330 50 50)" />
   
-  <!-- Dial Wheel -->
-  <circle cx="12" cy="12" r="3.8" />
+  <!-- Middle dial disk -->
+  <circle cx="50" cy="50" r="28" stroke="currentColor" stroke-width="4" fill="none" />
   
-  <!-- Dial Pointer Tick -->
-  <line x1="12" y1="5" x2="12" y2="6.5" stroke-width="1.2" />
+  <!-- Inner solid knob -->
+  <circle cx="50" cy="50" r="16" fill="currentColor" />
   
-  <!-- Dial pointer line -->
-  <line x1="12" y1="12" x2="13.8" y2="9.5" stroke-width="1.5" />
+  <!-- Pointer indicator line -->
+  <line class="pointer" x1="50" y1="50" x2="50" y2="28" stroke-width="6" stroke-linecap="round" />
   
-  <!-- Central Spindle -->
-  <circle cx="12" cy="12" r="0.8" fill="currentColor" stroke="none" />
-  
-  <!-- Hinges -->
-  <line x1="1.5" y1="7" x2="3.5" y2="7" />
-  <line x1="1.5" y1="17" x2="3.5" y2="17" />
+  <!-- Pointer dot on the pointer line -->
+  <circle cx="50" cy="34" r="3.5" fill="currentColor" />
 </svg>
