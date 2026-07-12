@@ -147,7 +147,7 @@ function EditableBudgetName() {
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.5"
+          strokeWidth="1.8"
           strokeLinecap="round"
           strokeLinejoin="round"
           style={{
@@ -155,29 +155,23 @@ function EditableBudgetName() {
             flexShrink: 0,
           }}
         >
-          {/* Outer combination dial ring */}
-          <circle cx="12" cy="12" r="9.5" />
+          {/* Inner solid hub */}
+          <circle cx="12" cy="12" r="2.5" fill="currentColor" />
           
-          {/* Inner circular groove */}
-          <circle cx="12" cy="12" r="6" strokeDasharray="2 2" strokeWidth="1" opacity="0.7" />
+          {/* Outer wheel ring */}
+          <circle cx="12" cy="12" r="7.5" />
           
-          {/* Outer alignment ticks (Twelve, Three, Six, Nine o'clock) */}
-          <line x1="12" y1="2.5" x2="12" y2="4.5" />
-          <line x1="12" y1="19.5" x2="12" y2="21.5" />
-          <line x1="2.5" y1="12" x2="4.5" y2="12" />
-          <line x1="19.5" y1="12" x2="21.5" y2="12" />
+          {/* Top spoke */}
+          <line x1="12" y1="9" x2="12" y2="2.5" />
+          <circle cx="12" cy="2.5" r="1.5" fill="currentColor" stroke="none" />
           
-          {/* 45-degree sub-ticks */}
-          <line x1="17" y1="7" x2="18.4" y2="5.6" opacity="0.6" strokeWidth="1" />
-          <line x1="17" y1="17" x2="18.4" y2="18.4" opacity="0.6" strokeWidth="1" />
-          <line x1="7" y1="17" x2="5.6" y2="18.4" opacity="0.6" strokeWidth="1" />
-          <line x1="7" y1="7" x2="5.6" y2="5.6" opacity="0.6" strokeWidth="1" />
+          {/* Bottom right spoke (120 degrees) */}
+          <line x1="14.6" y1="13.5" x2="20.2" y2="16.8" />
+          <circle cx="20.2" cy="16.8" r="1.5" fill="currentColor" stroke="none" />
           
-          {/* Center lock spindle / knob */}
-          <circle cx="12" cy="12" r="2" fill="currentColor" />
-          
-          {/* Pointer indicator pointing to 2 o'clock */}
-          <line x1="12" y1="12" x2="16.5" y2="7.5" strokeWidth="2" />
+          {/* Bottom left spoke (240 degrees) */}
+          <line x1="9.4" y1="13.5" x2="3.8" y2="16.8" />
+          <circle cx="3.8" cy="16.8" r="1.5" fill="currentColor" stroke="none" />
         </svg>
         <Text style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
           {budgetName || t('Unnamed')}
