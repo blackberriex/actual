@@ -10,6 +10,7 @@ import {
 } from './util/middlewares';
 import { validateSession } from './util/validate-user';
 import { readLogs, appendLog, readSyncState, writeSyncState } from './util/logs';
+import { checkPassword } from './accounts/password';
 
 
 const app = express();
@@ -418,8 +419,7 @@ app.post(
 
 app.get('/logs', (req, res, next) => {
   const key = req.headers['x-logs-key'];
-  const serverPassword = process.env.ACTUAL_SERVER_PASSWORD;
-  if (serverPassword && key === serverPassword) {
+  if (key && checkPassword(key)) {
     return next();
   }
   return validateSessionMiddleware(req, res, next);
@@ -432,8 +432,7 @@ app.get('/logs', (req, res, next) => {
 
 app.post('/logs', (req, res) => {
   const key = req.headers['x-logs-key'];
-  const serverPassword = process.env.ACTUAL_SERVER_PASSWORD;
-  if (!serverPassword || key !== serverPassword) {
+  if (!key || !checkPassword(key)) {
     return res.status(403).send({ error: 'Unauthorized log update' });
   }
   const { level, type, message, details, updateSyncTime } = req.body || {};
