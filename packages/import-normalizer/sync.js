@@ -106,11 +106,66 @@ function formatLocalDate(timestampSec) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+async function postLog({ level, type, message, details = '', updateSyncTime = false }) {
+  try {
+    const url = `${ACTUAL_SERVER_URL}/admin/logs`;
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-logs-key': ACTUAL_SERVER_PASSWORD
+      },
+      body: JSON.stringify({ level, type, message, details, updateSyncTime })
+    });
+  } catch (e) {
+    console.error('Failed to post log to server:', e.message);
+  }
+}
+
+async function getLastSyncTime() {
+  try {
+    const url = `${ACTUAL_SERVER_URL}/admin/logs`;
+    const res = await fetch(url, {
+      headers: {
+        'x-logs-key': ACTUAL_SERVER_PASSWORD
+      }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.lastSyncTime;
+    }
+  } catch (e) {
+    console.error('Failed to fetch last sync time:', e.message);
+  }
+  return null;
+}
+
 async function runSync() {
   console.log('--- Monobank Daily Sync Started ---');
   console.log(`Time: ${new Date().toLocaleString()}`);
   
+  await postLog({
+    level: 'info',
+    type: 'sync',
+    message: 'Monobank sync started'
+  });
+  
   try {
+    // Fetch last sync time
+    const lastSyncTimeStr = await getLastSyncTime();
+    let queryStartSec;
+    let timeSourceMessage = '';
+    
+    if (lastSyncTimeStr) {
+      // Use lastSyncTime, but subtract 5 minutes as safety margin
+      queryStartSec = Math.floor(new Date(lastSyncTimeStr).getTime() / 1000) - 300;
+      timeSourceMessage = `since last sync timestamp (${new Date(queryStartSec * 1000).toLocaleString()})`;
+    } else {
+      // Fallback to 24 hours ago
+      queryStartSec = Math.floor(Date.now() / 1000) - (24 * 60 * 60);
+      timeSourceMessage = 'since last 24 hours (fallback)';
+    }
+
     // 1. Initialize Actual Budget API
     console.log('Connecting to Actual Budget server...');
     const dataDir = path.join(__dirname, 'actual-data');
@@ -131,6 +186,9 @@ async function runSync() {
     // Resolve all Actual accounts
     const actualAccounts = await api.getAccounts();
     
+    let totalImportedCount = 0;
+    let importSummaryDetails = [];
+    
     // 2. Loop through configured accounts
     for (let i = 0; i < accountsToSync.length; i++) {
       const acc = accountsToSync[i];
@@ -144,16 +202,22 @@ async function runSync() {
       
       // Fetch from Monobank
       const nowSec = Math.floor(Date.now() / 1000);
-      const oneDayAgoSec = nowSec - (24 * 60 * 60);
       
-      console.log(`Fetching Monobank statement from ${formatLocalDate(oneDayAgoSec)} to ${formatLocalDate(nowSec)}...`);
-      const monoResponse = await fetch(`https://api.monobank.ua/personal/statement/${acc.monoId}/${oneDayAgoSec}/${nowSec}`, {
+      console.log(`Fetching Monobank statement ${timeSourceMessage}...`);
+      const monoResponse = await fetch(`https://api.monobank.ua/personal/statement/${acc.monoId}/${queryStartSec}/${nowSec}`, {
         headers: { 'X-Token': MONOBANK_TOKEN }
       });
       
       if (!monoResponse.ok) {
         const errText = await monoResponse.text();
-        console.error(`Error fetching Monobank statement for "${acc.actualName}": ${monoResponse.status} - ${errText}`);
+        const errLog = `Error fetching Monobank statement for "${acc.actualName}": ${monoResponse.status} - ${errText}`;
+        console.error(errLog);
+        await postLog({
+          level: 'error',
+          type: 'sync',
+          message: `Failed to fetch statement for "${acc.actualName}"`,
+          details: errLog
+        });
         continue;
       }
       
@@ -162,13 +226,21 @@ async function runSync() {
       
       if (transactions.length === 0) {
         console.log(`No new transactions for "${acc.actualName}". Skipping import.`);
+        importSummaryDetails.push(`• ${acc.actualName}: 0 new transactions`);
         continue;
       }
       
       // Resolve Actual account UUID
       const targetAccount = actualAccounts.find(a => a.name.toLowerCase() === acc.actualName.toLowerCase());
       if (!targetAccount) {
-        console.error(`Error: Could not find account named "${acc.actualName}" in Actual Budget. Skipping.`);
+        const errLog = `Error: Could not find account named "${acc.actualName}" in Actual Budget. Skipping.`;
+        console.error(errLog);
+        await postLog({
+          level: 'error',
+          type: 'sync',
+          message: `Account "${acc.actualName}" not found in budget`,
+          details: errLog
+        });
         continue;
       }
       
@@ -194,14 +266,29 @@ async function runSync() {
       // Import transactions
       console.log(`Importing ${normalizedTransactions.length} transactions into "${acc.actualName}"...`);
       await api.addTransactions(targetAccount.id, normalizedTransactions);
+      totalImportedCount += normalizedTransactions.length;
+      importSummaryDetails.push(`• ${acc.actualName}: ${normalizedTransactions.length} transactions imported`);
     }
     
     console.log('\nSyncing database with server...');
     await api.shutdown();
     
     console.log('--- Monobank Daily Sync Completed Successfully ---');
+    await postLog({
+      level: 'info',
+      type: 'sync',
+      message: `Monobank sync completed: imported ${totalImportedCount} transactions`,
+      details: importSummaryDetails.join('\n'),
+      updateSyncTime: true
+    });
   } catch (error) {
     console.error('Sync Error:', error.message);
+    await postLog({
+      level: 'error',
+      type: 'sync',
+      message: `Monobank sync failed: ${error.message}`,
+      details: error.stack
+    });
     process.exit(1);
   }
 }

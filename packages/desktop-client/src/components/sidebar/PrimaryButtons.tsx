@@ -12,6 +12,7 @@ import {
   SvgTag,
   SvgTuning,
   SvgWallet,
+  SvgViewList,
 } from '@actual-app/components/icons/v1';
 import { SvgCalendar3 } from '@actual-app/components/icons/v2';
 import { View } from '@actual-app/components/view';
@@ -38,6 +39,7 @@ export function PrimaryButtons() {
     '/bank-sync',
     '/settings',
     '/tools',
+    '/logs',
   ].some(route => location.pathname.startsWith(route));
 
   useEffect(() => {
@@ -90,6 +92,12 @@ export function PrimaryButtons() {
             title={t('Settings')}
             Icon={SvgCog}
             to="/settings"
+            indent={15}
+          />
+          <SecondaryItem
+            title={t('Logs')}
+            Icon={SvgViewList}
+            to="/logs"
             indent={15}
           />
         </>

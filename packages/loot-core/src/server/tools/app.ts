@@ -8,15 +8,22 @@ import { q } from '#shared/query';
 import type { TransactionEntity } from '#types/models';
 import { getServer } from '#server/server-config';
 
+import * as asyncStorage from '#platform/server/asyncStorage';
+import { get, post } from '#server/post';
+
 export type ToolsHandlers = {
   'tools/fix-split-transactions': typeof fixSplitTransactions;
   'tools/pb-exchange-rate': typeof getPrivatBankRate;
+  'tools/logs': typeof getLogs;
+  'tools/logs-trigger-sync': typeof triggerLogsSync;
 };
 
 export const app = createApp<ToolsHandlers>();
 
 app.method('tools/fix-split-transactions', fixSplitTransactions);
 app.method('tools/pb-exchange-rate', getPrivatBankRate);
+app.method('tools/logs', getLogs);
+app.method('tools/logs-trigger-sync', triggerLogsSync);
 
 async function fixSplitTransactions(): Promise<{
   numBlankPayees: number;
@@ -171,4 +178,36 @@ async function getPrivatBankRate({ date }: { date: string }): Promise<{
     }
   }
   return { purchaseRate: null, saleRate: null };
+}
+
+async function getLogs(): Promise<any> {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('Failed to get server config.');
+  }
+  return get(serverConfig.SYNC_SERVER + '/admin/logs', {
+    'X-ACTUAL-TOKEN': userToken,
+  });
+}
+
+async function triggerLogsSync(): Promise<any> {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('Failed to get server config.');
+  }
+  return post(
+    serverConfig.SYNC_SERVER + '/admin/logs/trigger-sync',
+    {},
+    {
+      'X-ACTUAL-TOKEN': userToken,
+    },
+  );
 }

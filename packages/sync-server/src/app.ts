@@ -19,6 +19,8 @@ import * as secretApp from './app-secrets';
 import * as simpleFinApp from './app-simplefin/app-simplefin';
 import * as syncApp from './app-sync';
 import { config } from './load-config';
+import { appendLog } from './util/logs';
+
 
 const app = express();
 
@@ -98,13 +100,25 @@ app.get('/pb-rate', async (req, res) => {
     const data = await response.json();
     const usdRate = data?.exchangeRate?.find((r: any) => r.currency === 'USD');
     if (usdRate) {
+      const purchaseRate = usdRate.purchaseRate || usdRate.purchaseRateNB || null;
+      const saleRate = usdRate.saleRate || usdRate.saleRateNB || null;
+      appendLog({
+        level: 'info',
+        type: 'rate',
+        message: `Fetched PrivatBank exchange rate for ${formattedDate}: Purchase = ${purchaseRate} UAH, Sale = ${saleRate} UAH`
+      });
       return res.send({
-        purchaseRate: usdRate.purchaseRate || usdRate.purchaseRateNB || null,
-        saleRate: usdRate.saleRate || usdRate.saleRateNB || null,
+        purchaseRate,
+        saleRate,
       });
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error(`Failed to fetch PrivatBank exchange rate for ${formattedDate}:`, e);
+    appendLog({
+      level: 'error',
+      type: 'rate',
+      message: `Failed to fetch PrivatBank exchange rate for ${formattedDate}: ${e.message}`
+    });
   }
   return res.send({ purchaseRate: null, saleRate: null });
 });

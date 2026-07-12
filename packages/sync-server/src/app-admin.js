@@ -9,6 +9,8 @@ import {
   validateSessionMiddleware,
 } from './util/middlewares';
 import { validateSession } from './util/validate-user';
+import { readLogs, appendLog, readSyncState, writeSyncState } from './util/logs';
+
 
 const app = express();
 app.use(express.json());
@@ -413,5 +415,77 @@ app.post(
     res.status(200).send({ status: 'ok', data: {} });
   },
 );
+
+app.get('/logs', (req, res, next) => {
+  const key = req.headers['x-logs-key'];
+  const serverPassword = process.env.ACTUAL_SERVER_PASSWORD;
+  if (serverPassword && key === serverPassword) {
+    return next();
+  }
+  return validateSessionMiddleware(req, res, next);
+}, (req, res) => {
+  res.json({
+    logs: readLogs(),
+    lastSyncTime: readSyncState().lastSyncTime,
+  });
+});
+
+app.post('/logs', (req, res) => {
+  const key = req.headers['x-logs-key'];
+  const serverPassword = process.env.ACTUAL_SERVER_PASSWORD;
+  if (!serverPassword || key !== serverPassword) {
+    return res.status(403).send({ error: 'Unauthorized log update' });
+  }
+  const { level, type, message, details, updateSyncTime } = req.body || {};
+  if (!level || !type || !message) {
+    return res.status(400).send({ error: 'Missing required log fields' });
+  }
+  appendLog({ level, type, message, details });
+  if (updateSyncTime) {
+    writeSyncState({ lastSyncTime: new Date().toISOString() });
+  }
+  res.json({ status: 'ok' });
+});
+
+app.post('/logs/trigger-sync', validateSessionMiddleware, async (req, res) => {
+  const http = await import('node:http');
+  const clientReq = http.request({
+    socketPath: '/var/run/docker.sock',
+    path: '/v1.41/containers/monobank-sync/start',
+    method: 'POST'
+  }, (clientRes) => {
+    if (clientRes.statusCode === 204 || clientRes.statusCode === 304) {
+      appendLog({
+        level: 'info',
+        type: 'system',
+        message: 'Monobank manual sync triggered successfully via UI'
+      });
+      res.json({ status: 'ok' });
+    } else {
+      let data = '';
+      clientRes.on('data', chunk => data += chunk);
+      clientRes.on('end', () => {
+        appendLog({
+          level: 'error',
+          type: 'system',
+          message: `Failed to trigger manual sync: Docker API status ${clientRes.statusCode}`,
+          details: data
+        });
+        res.status(500).json({ error: `Docker API returned status ${clientRes.statusCode}` });
+      });
+    }
+  });
+
+  clientReq.on('error', (err) => {
+    appendLog({
+      level: 'error',
+      type: 'system',
+      message: `Failed to trigger manual sync: ${err.message}`
+    });
+    res.status(500).json({ error: err.message });
+  });
+
+  clientReq.end();
+});
 
 app.use(errorMiddleware);

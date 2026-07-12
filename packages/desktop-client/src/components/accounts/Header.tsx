@@ -549,6 +549,7 @@ export function AccountHeader({
                           : []),
                         { name: 'export', text: t('Export') },
                         { name: 'privat-multi-import', text: 'Мульти-імпорт ПриватБанк' },
+                        { name: 'monobank-sync', text: 'Синхронізувати Monobank' },
                         {
                           name: 'toggle-net-worth-chart',
                           text: showNetWorthChart
@@ -745,7 +746,8 @@ type AccountMenuProps = {
       | 'toggle-cleared'
       | 'toggle-reconciled'
       | 'toggle-net-worth-chart'
-      | 'privat-multi-import',
+      | 'privat-multi-import'
+      | 'monobank-sync',
   ) => void;
 };
 
@@ -808,6 +810,7 @@ function AccountMenu({
         },
         { name: 'export', text: t('Export') },
         { name: 'privat-multi-import', text: 'Мульти-імпорт ПриватБанк' },
+        { name: 'monobank-sync', text: 'Синхронізувати Monobank' },
         ...(account && !account.closed
           ? canSync
             ? [

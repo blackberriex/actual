@@ -808,7 +808,8 @@ class AccountInternal extends PureComponent<
       | 'toggle-cleared'
       | 'toggle-reconciled'
       | 'toggle-net-worth-chart'
-      | 'privat-multi-import',
+      | 'privat-multi-import'
+      | 'monobank-sync',
   ) => {
     const accountId = this.props.accountId!;
     const account = this.props.accounts.find(
@@ -920,7 +921,57 @@ class AccountInternal extends PureComponent<
       case 'privat-multi-import':
         void this.onPrivatMultiImport();
         break;
+      case 'monobank-sync':
+        void this.onMonobankSync();
+        break;
       default:
+    }
+  };
+
+  onMonobankSync = async () => {
+    this.props.dispatch(
+      addNotification({
+        notification: {
+          type: 'info',
+          message: 'Запущено синхронізацію Monobank...',
+          timeout: 4000,
+        },
+      }),
+    );
+    try {
+      const res = await send('tools/logs-trigger-sync');
+      if (res && res.error) {
+        this.props.dispatch(
+          addNotification({
+            notification: {
+              type: 'error',
+              message: `Помилка запуску синхронізації: ${res.error}`,
+            },
+          }),
+        );
+      } else {
+        setTimeout(async () => {
+          await this.props.onSync();
+          this.props.dispatch(
+            addNotification({
+              notification: {
+                type: 'info',
+                message: 'Синхронізацію Monobank завершено. Оновлюємо дані...',
+                timeout: 5000,
+              },
+            }),
+          );
+        }, 6000);
+      }
+    } catch (e: any) {
+      this.props.dispatch(
+        addNotification({
+          notification: {
+            type: 'error',
+            message: `Помилка: ${e.message}`,
+          },
+        }),
+      );
     }
   };
 

@@ -38,6 +38,7 @@ import { LoadingIndicator } from './reports/LoadingIndicator';
 import { NarrowAlternate, WideComponent } from './responsive';
 import { useMultiuserEnabled } from './ServerContext';
 import { Settings } from './settings';
+import { Logs } from './Logs';
 import { FloatableSidebar } from './sidebar';
 import { ManageTagsPage } from './tags/ManageTagsPage';
 import { Titlebar } from './Titlebar';
@@ -327,6 +328,7 @@ export function FinancesApp() {
                   />
                   <Route path="/tags" element={<ManageTagsPage />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/logs" element={<Logs />} />
 
                   <Route
                     path="/gocardless/link"
