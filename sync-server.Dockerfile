@@ -35,6 +35,7 @@ COPY packages/ ./packages/
 
 # Increase memory limit for the build process to 8GB
 ENV NODE_OPTIONS=--max_old_space_size=8192
+ENV SKIP_TRANSLATIONS=true
 
 # lage's task hasher invokes `git ls-tree HEAD` during initialization, so it
 # needs a git repo even when individual targets disable caching. .dockerignore
