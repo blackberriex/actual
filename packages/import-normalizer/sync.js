@@ -255,6 +255,7 @@ async function runSync() {
         }
         
         normalizedTransactions.push({
+          account: targetAccount.id,
           date: formatLocalDate(tx.time),
           amount: finalAmount,
           payee_name: cleaned,
@@ -265,7 +266,7 @@ async function runSync() {
       
       // Import transactions
       console.log(`Importing ${normalizedTransactions.length} transactions into "${acc.actualName}"...`);
-      await api.addTransactions(targetAccount.id, normalizedTransactions);
+      await api.importTransactions(targetAccount.id, normalizedTransactions);
       totalImportedCount += normalizedTransactions.length;
       importSummaryDetails.push(`• ${acc.actualName}: ${normalizedTransactions.length} transactions imported`);
     }

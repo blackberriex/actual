@@ -189,9 +189,13 @@ async function getLogs(): Promise<any> {
   if (!serverConfig) {
     throw new Error('Failed to get server config.');
   }
-  return get(serverConfig.SYNC_SERVER + '/admin/logs', {
-    'X-ACTUAL-TOKEN': userToken,
+  const baseUrl = serverConfig.SYNC_SERVER.replace(/\/sync$/, '');
+  const res = await get(baseUrl + '/admin/logs', {
+    headers: {
+      'X-ACTUAL-TOKEN': userToken,
+    },
   });
+  return JSON.parse(res);
 }
 
 async function triggerLogsSync(): Promise<any> {
@@ -203,8 +207,9 @@ async function triggerLogsSync(): Promise<any> {
   if (!serverConfig) {
     throw new Error('Failed to get server config.');
   }
+  const baseUrl = serverConfig.SYNC_SERVER.replace(/\/sync$/, '');
   return post(
-    serverConfig.SYNC_SERVER + '/admin/logs/trigger-sync',
+    baseUrl + '/admin/logs/trigger-sync',
     {},
     {
       'X-ACTUAL-TOKEN': userToken,

@@ -72,6 +72,7 @@ if (config.get('corsProxy.enabled')) {
 }
 
 app.use('/admin', adminApp.handlers);
+app.use('/sync/admin', adminApp.handlers);
 app.use('/openid', openidApp.handlers);
 
 app.get('/mode', (req, res) => {
