@@ -142,18 +142,42 @@ function EditableBudgetName() {
         }}
       >
         <svg
-          width="24"
-          height="24"
-          viewBox="9 8 144 144"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
           style={{
             marginRight: 10,
             flexShrink: 0,
           }}
         >
-          <path
-            fill={theme.vaultLogo}
-            d="M25.5,28.58,80.8,136.22,136.5,28.58ZM72.2,71.31H63.39V62.5H72.2Zm0-13.22H63.39v-8.8H72.2ZM85.41,84.52H76.6V75.71h8.81Zm0-13.21H76.6V62.5h8.81Zm0-13.22H76.6v-8.8h8.81ZM98.55,71.31H89.74V62.5h8.81ZM89.74,58.09v-8.8h8.81v8.8Z"
-          />
+          {/* Outer combination dial ring */}
+          <circle cx="12" cy="12" r="9.5" />
+          
+          {/* Inner circular groove */}
+          <circle cx="12" cy="12" r="6" strokeDasharray="2 2" strokeWidth="1" opacity="0.7" />
+          
+          {/* Outer alignment ticks (Twelve, Three, Six, Nine o'clock) */}
+          <line x1="12" y1="2.5" x2="12" y2="4.5" />
+          <line x1="12" y1="19.5" x2="12" y2="21.5" />
+          <line x1="2.5" y1="12" x2="4.5" y2="12" />
+          <line x1="19.5" y1="12" x2="21.5" y2="12" />
+          
+          {/* 45-degree sub-ticks */}
+          <line x1="17" y1="7" x2="18.4" y2="5.6" opacity="0.6" strokeWidth="1" />
+          <line x1="17" y1="17" x2="18.4" y2="18.4" opacity="0.6" strokeWidth="1" />
+          <line x1="7" y1="17" x2="5.6" y2="18.4" opacity="0.6" strokeWidth="1" />
+          <line x1="7" y1="7" x2="5.6" y2="5.6" opacity="0.6" strokeWidth="1" />
+          
+          {/* Center lock spindle / knob */}
+          <circle cx="12" cy="12" r="2" fill="currentColor" />
+          
+          {/* Pointer indicator pointing to 2 o'clock */}
+          <line x1="12" y1="12" x2="16.5" y2="7.5" strokeWidth="2" />
         </svg>
         <Text style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
           {budgetName || t('Unnamed')}
