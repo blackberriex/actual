@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const api = require('@actual-app/api');
 require('dotenv').config();
 
@@ -10,8 +11,10 @@ const {
   ACTUAL_SYNC_ID,
   ACTUAL_ENCRYPTION_PASSWORD,
   CRYPTO_HOLDINGS,
-  CRYPTO_ACCOUNT_NAME = 'Binance',
-  ACTUAL_BUDGET_CURRENCY = 'UAH'
+  CRYPTO_ACCOUNT_NAME = 'Crypto',
+  ACTUAL_BUDGET_CURRENCY = 'UAH',
+  BINANCE_API_KEY,
+  BINANCE_API_SECRET
 } = process.env;
 
 // Validate configuration
@@ -20,17 +23,100 @@ if (!ACTUAL_SERVER_URL || !ACTUAL_SERVER_PASSWORD || !ACTUAL_SYNC_ID) {
   process.exit(1);
 }
 
-if (!CRYPTO_HOLDINGS) {
-  console.error('Error: CRYPTO_HOLDINGS is not defined in environment.');
+if (!CRYPTO_HOLDINGS && (!BINANCE_API_KEY || !BINANCE_API_SECRET)) {
+  console.error('Error: Either CRYPTO_HOLDINGS or BINANCE_API_KEY & BINANCE_API_SECRET must be defined in environment.');
   process.exit(1);
 }
 
-let holdings = {};
-try {
-  holdings = JSON.parse(CRYPTO_HOLDINGS);
-} catch (e) {
-  console.error('Error: CRYPTO_HOLDINGS is not a valid JSON string:', e.message);
-  process.exit(1);
+// Sign query for Binance HMAC SHA256 signature
+function signQuery(queryString, apiSecret) {
+  return crypto
+    .createHmac('sha256', apiSecret)
+    .update(queryString)
+    .digest('hex');
+}
+
+// Fetch balances from Binance Spot account
+async function getBinanceSpotBalances(apiKey, apiSecret) {
+  const timestamp = Date.now();
+  const query = `timestamp=${timestamp}`;
+  const signature = signQuery(query, apiSecret);
+  const url = `https://api.binance.com/api/v3/account?${query}&signature=${signature}`;
+  
+  const res = await fetch(url, {
+    headers: { 'X-MBX-APIKEY': apiKey }
+  });
+  if (!res.ok) {
+    throw new Error(`Binance Spot API returned status ${res.status}: ${await res.text()}`);
+  }
+  const data = await res.json();
+  const balances = {};
+  for (const item of data.balances) {
+    const free = parseFloat(item.free);
+    const locked = parseFloat(item.locked);
+    const total = free + locked;
+    if (total > 0) {
+      balances[item.asset] = total;
+    }
+  }
+  return balances;
+}
+
+// Fetch balances from Binance Funding wallet
+async function getBinanceFundingBalances(apiKey, apiSecret) {
+  const timestamp = Date.now();
+  const query = `timestamp=${timestamp}`;
+  const signature = signQuery(query, apiSecret);
+  const url = `https://api.binance.com/sapi/v1/asset/get-user-asset?${query}&signature=${signature}`;
+  
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'X-MBX-APIKEY': apiKey }
+    });
+    if (!res.ok) {
+      console.warn(`[Warning] Binance Funding wallet fetch skipped: status ${res.status}`);
+      return {};
+    }
+    const data = await res.json();
+    const balances = {};
+    for (const item of data) {
+      const total = parseFloat(item.free) + parseFloat(item.freeze) + parseFloat(item.withdrawing);
+      if (total > 0) {
+        balances[item.asset] = (balances[item.asset] || 0) + total;
+      }
+    }
+    return balances;
+  } catch (e) {
+    console.warn(`[Warning] Failed to fetch Binance Funding wallet: ${e.message}`);
+    return {};
+  }
+}
+
+// Retrieve combined active holdings
+async function getHoldings() {
+  if (BINANCE_API_KEY && BINANCE_API_SECRET) {
+    console.log('Fetching live balances from Binance API...');
+    const spot = await getBinanceSpotBalances(BINANCE_API_KEY, BINANCE_API_SECRET);
+    const funding = await getBinanceFundingBalances(BINANCE_API_KEY, BINANCE_API_SECRET);
+    const combined = {};
+    for (const [asset, val] of Object.entries(spot)) {
+      combined[asset] = val;
+    }
+    for (const [asset, val] of Object.entries(funding)) {
+      combined[asset] = (combined[asset] || 0) + val;
+    }
+    return combined;
+  }
+
+  // Fallback to static config
+  console.log('Loading static holdings from CRYPTO_HOLDINGS...');
+  try {
+    return JSON.parse(CRYPTO_HOLDINGS);
+  } catch (e) {
+    console.error('Error: CRYPTO_HOLDINGS is not a valid JSON string:', e.message);
+    process.exit(1);
+  }
 }
 
 // Fetch crypto price from Binance Public API
@@ -76,12 +162,13 @@ async function getUSDToUAHRate() {
 
 async function run() {
   try {
+    const activeHoldings = await getHoldings();
     console.log('Calculating crypto portfolio valuation...');
     let totalUSD = 0;
     const breakdownLines = [];
 
     // Calculate valuation for each asset
-    for (const [coin, amount] of Object.entries(holdings)) {
+    for (const [coin, amount] of Object.entries(activeHoldings)) {
       const numericAmount = parseFloat(amount);
       if (isNaN(numericAmount) || numericAmount <= 0) continue;
 
