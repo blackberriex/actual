@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -175,37 +175,6 @@ export function Account<FieldName extends SheetFields<'account'>>({
     return groupAccounts.filter(a => !a.closed && a.name?.toLowerCase().includes('eur'));
   }, [groupAccounts]);
 
-  const usdBalanceQuery = useMemo(() => {
-    if (usdAccounts.length === 0) return null;
-    const ids = usdAccounts.map(a => a.id);
-    return q('transactions').filter({ account: { $oneof: ids } }).calculate({ $sum: '$amount' });
-  }, [usdAccounts]);
-
-  const eurBalanceQuery = useMemo(() => {
-    if (eurAccounts.length === 0) return null;
-    const ids = eurAccounts.map(a => a.id);
-    return q('transactions').filter({ account: { $oneof: ids } }).calculate({ $sum: '$amount' });
-  }, [eurAccounts]);
-
-  const dummyQuery = useMemo(() => q('transactions').filter({ id: 'dummy' }).calculate({ $sum: '$amount' }), []);
-
-  const usdBinding = useMemo(() => {
-    return {
-      name: 'usd_total_balance',
-      query: usdBalanceQuery || dummyQuery
-    } as any;
-  }, [usdBalanceQuery, dummyQuery]);
-
-  const eurBinding = useMemo(() => {
-    return {
-      name: 'eur_total_balance',
-      query: eurBalanceQuery || dummyQuery
-    } as any;
-  }, [eurBalanceQuery, dummyQuery]);
-
-  const usdBalanceVal = useSheetValue(usdBinding);
-  const eurBalanceVal = useSheetValue(eurBinding);
-
   const isTotalRow = to === '/accounts' || to === '/accounts/onbudget' || to === '/accounts/offbudget';
 
   const showUahUsdEstimate =
@@ -223,8 +192,6 @@ export function Account<FieldName extends SheetFields<'account'>>({
           query={query}
           usdAccounts={usdAccounts}
           eurAccounts={eurAccounts}
-          usdBalanceVal={usdBalanceVal}
-          eurBalanceVal={eurBalanceVal}
           pbUsdSaleRate={pbUsdSaleRate}
           pbEurSaleRate={pbEurSaleRate}
           nbuUsdRate={nbuUsdRate}
@@ -537,12 +504,31 @@ function EURBalanceCell({ query }: { query: any }) {
   );
 }
 
+interface AccountValueReporterProps {
+  accountId: string;
+  rate: number;
+  onValueChange: (id: string, converted: number, raw: number) => void;
+}
+
+const AccountValueReporter = React.memo(function AccountValueReporter({
+  accountId,
+  rate,
+  onValueChange,
+}: AccountValueReporterProps) {
+  const balance = useSheetValue(bindings.accountBalance(accountId)) || 0;
+
+  useEffect(() => {
+    onValueChange(accountId, Math.round(balance * rate), balance);
+    return () => onValueChange(accountId, 0, 0);
+  }, [balance, rate, accountId, onValueChange]);
+
+  return null;
+});
+
 function UahTotalCell({
   query,
   usdAccounts,
   eurAccounts,
-  usdBalanceVal,
-  eurBalanceVal,
   pbUsdSaleRate,
   pbEurSaleRate,
   nbuUsdRate,
@@ -551,8 +537,6 @@ function UahTotalCell({
   query: any;
   usdAccounts: any[];
   eurAccounts: any[];
-  usdBalanceVal: any;
-  eurBalanceVal: any;
   pbUsdSaleRate: string;
   pbEurSaleRate: string;
   nbuUsdRate: string;
@@ -561,20 +545,49 @@ function UahTotalCell({
   const rawTotal = useSheetValue(query);
   const format = useFormat();
 
+  const [reportedValues, setReportedValues] = useState<Record<string, { converted: number; raw: number }>>({});
+
+  const handleValueChange = useCallback((id: string, converted: number, raw: number) => {
+    setReportedValues(prev => {
+      if (prev[id]?.converted === converted && prev[id]?.raw === raw) return prev;
+      return {
+        ...prev,
+        [id]: { converted, raw }
+      };
+    });
+  }, []);
+
   if (typeof rawTotal !== 'number') return null;
 
   const usdSaleRate = pbUsdSaleRate ? parseFloat(pbUsdSaleRate) : 41.50;
   const eurSaleRate = pbEurSaleRate ? parseFloat(pbEurSaleRate) : 45.10;
 
-  const usdVal = typeof usdBalanceVal === 'number' ? usdBalanceVal : 0;
-  const eurVal = typeof eurBalanceVal === 'number' ? eurBalanceVal : 0;
-  const correctedCents = rawTotal - usdVal - eurVal + Math.round(usdVal * usdSaleRate) + Math.round(eurVal * eurSaleRate);
+  const totalForeignRaw = Object.values(reportedValues).reduce((acc, val) => acc + val.raw, 0);
+  const totalForeignConverted = Object.values(reportedValues).reduce((acc, val) => acc + val.converted, 0);
+
+  const correctedCents = rawTotal - totalForeignRaw + totalForeignConverted;
 
   const nbuRate = nbuUsdRate ? parseFloat(nbuUsdRate) : 40.80;
   const estimatedUsd = nbuRate > 0 ? Math.round((correctedCents / 100) / nbuRate) : 0;
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      {usdAccounts.map(acc => (
+        <AccountValueReporter
+          key={acc.id}
+          accountId={acc.id}
+          rate={usdSaleRate}
+          onValueChange={handleValueChange}
+        />
+      ))}
+      {eurAccounts.map(acc => (
+        <AccountValueReporter
+          key={acc.id}
+          accountId={acc.id}
+          rate={eurSaleRate}
+          onValueChange={handleValueChange}
+        />
+      ))}
       <FinancialText style={{ whiteSpace: 'nowrap' }}>
         <PrivacyFilter activationFilters={[true]}>
           {format(correctedCents, 'financial')}
