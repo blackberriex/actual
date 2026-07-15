@@ -164,6 +164,8 @@ async function fixSplitTransactions(): Promise<{
 async function getPrivatBankRate({ date }: { date: string }): Promise<{
   purchaseRate: number | null;
   saleRate: number | null;
+  eurPurchaseRate: number | null;
+  eurSaleRate: number | null;
 }> {
   const serverConfig = getServer();
   if (serverConfig && serverConfig.SYNC_SERVER) {
@@ -177,7 +179,7 @@ async function getPrivatBankRate({ date }: { date: string }): Promise<{
       console.error(`Failed to fetch PB rate via sync-server proxy for ${date}:`, e);
     }
   }
-  return { purchaseRate: null, saleRate: null };
+  return { purchaseRate: null, saleRate: null, eurPurchaseRate: null, eurSaleRate: null };
 }
 
 async function getLogs(): Promise<any> {

@@ -151,19 +151,60 @@ export function Account<FieldName extends SheetFields<'account'>>({
   const updateAccount = useUpdateAccountMutation();
 
   const isUsdAccount = account?.name?.toLowerCase().includes('usd');
+  const isEurAccount = account?.name?.toLowerCase().includes('eur');
+
   const [nbuUsdRate] = useSyncedPref('nbu_usd_rate');
+  const [nbuEurRate] = useSyncedPref('nbu_eur_rate');
   const [pbUsdSaleRate] = useSyncedPref('pb_usd_sale_rate');
+  const [pbEurSaleRate] = useSyncedPref('pb_eur_sale_rate');
 
-  const { data: accounts } = useAccounts();
-  const usdAccount = useMemo(() => {
-    return accounts?.find(a => !a.closed && a.name?.toLowerCase().includes('usd'));
-  }, [accounts]);
+  const { data: accounts = [] } = useAccounts();
 
-  const usdAccountBalanceQuery = useMemo(() => {
-    return usdAccount ? bindings.accountBalance(usdAccount.id) : query;
-  }, [usdAccount, query]);
+  const groupAccounts = useMemo(() => {
+    if (to === '/accounts/onbudget') return accounts.filter(a => !a.offbudget);
+    if (to === '/accounts/offbudget') return accounts.filter(a => a.offbudget);
+    if (to === '/accounts') return accounts;
+    return [];
+  }, [to, accounts]);
 
-  const usdBalanceVal = useSheetValue(usdAccountBalanceQuery);
+  const usdAccounts = useMemo(() => {
+    return groupAccounts.filter(a => !a.closed && a.name?.toLowerCase().includes('usd'));
+  }, [groupAccounts]);
+
+  const eurAccounts = useMemo(() => {
+    return groupAccounts.filter(a => !a.closed && a.name?.toLowerCase().includes('eur'));
+  }, [groupAccounts]);
+
+  const usdBalanceQuery = useMemo(() => {
+    if (usdAccounts.length === 0) return null;
+    const ids = usdAccounts.map(a => a.id);
+    return q('transactions').filter({ account: { $oneof: ids } }).calculate({ $sum: '$amount' });
+  }, [usdAccounts]);
+
+  const eurBalanceQuery = useMemo(() => {
+    if (eurAccounts.length === 0) return null;
+    const ids = eurAccounts.map(a => a.id);
+    return q('transactions').filter({ account: { $oneof: ids } }).calculate({ $sum: '$amount' });
+  }, [eurAccounts]);
+
+  const dummyQuery = useMemo(() => q('transactions').filter({ id: 'dummy' }).calculate({ $sum: '$amount' }), []);
+
+  const usdBinding = useMemo(() => {
+    return {
+      name: 'usd_total_balance',
+      query: usdBalanceQuery || dummyQuery
+    } as any;
+  }, [usdBalanceQuery, dummyQuery]);
+
+  const eurBinding = useMemo(() => {
+    return {
+      name: 'eur_total_balance',
+      query: eurBalanceQuery || dummyQuery
+    } as any;
+  }, [eurBalanceQuery, dummyQuery]);
+
+  const usdBalanceVal = useSheetValue(usdBinding);
+  const eurBalanceVal = useSheetValue(eurBinding);
 
   const isTotalRow = to === '/accounts' || to === '/accounts/onbudget' || to === '/accounts/offbudget';
 
@@ -172,20 +213,27 @@ export function Account<FieldName extends SheetFields<'account'>>({
       to === '/accounts/onbudget' ||
       to === '/accounts/offbudget' ||
       (account && !account.closed)) &&
-    !isUsdAccount;
+    !isUsdAccount &&
+    !isEurAccount;
 
   const balanceCell = (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
       {isTotalRow ? (
         <UahTotalCell
           query={query}
-          usdAccount={usdAccount}
+          usdAccounts={usdAccounts}
+          eurAccounts={eurAccounts}
           usdBalanceVal={usdBalanceVal}
+          eurBalanceVal={eurBalanceVal}
           pbUsdSaleRate={pbUsdSaleRate}
+          pbEurSaleRate={pbEurSaleRate}
           nbuUsdRate={nbuUsdRate}
+          nbuEurRate={nbuEurRate}
         />
       ) : isUsdAccount ? (
         <USDBalanceCell query={query} />
+      ) : isEurAccount ? (
+        <EURBalanceCell query={query} />
       ) : (
         <>
           <CellValue binding={query} type="financial" />
@@ -478,27 +526,49 @@ function USDBalanceCell({ query }: { query: any }) {
   );
 }
 
+function EURBalanceCell({ query }: { query: any }) {
+  const rawBalance = useSheetValue(query);
+  if (typeof rawBalance !== 'number') return null;
+  const eur = rawBalance / 100;
+  return (
+    <span>
+      {eur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}€
+    </span>
+  );
+}
+
 function UahTotalCell({
   query,
-  usdAccount,
+  usdAccounts,
+  eurAccounts,
   usdBalanceVal,
+  eurBalanceVal,
   pbUsdSaleRate,
+  pbEurSaleRate,
   nbuUsdRate,
+  nbuEurRate,
 }: {
   query: any;
-  usdAccount: any;
+  usdAccounts: any[];
+  eurAccounts: any[];
   usdBalanceVal: any;
+  eurBalanceVal: any;
   pbUsdSaleRate: string;
+  pbEurSaleRate: string;
   nbuUsdRate: string;
+  nbuEurRate: string;
 }) {
   const rawTotal = useSheetValue(query);
   const format = useFormat();
 
   if (typeof rawTotal !== 'number') return null;
 
-  const saleRate = pbUsdSaleRate ? parseFloat(pbUsdSaleRate) : 41.50;
+  const usdSaleRate = pbUsdSaleRate ? parseFloat(pbUsdSaleRate) : 41.50;
+  const eurSaleRate = pbEurSaleRate ? parseFloat(pbEurSaleRate) : 45.10;
+
   const usdVal = typeof usdBalanceVal === 'number' ? usdBalanceVal : 0;
-  const correctedCents = rawTotal - (usdAccount ? usdVal : 0) + Math.round((usdAccount ? usdVal : 0) * saleRate);
+  const eurVal = typeof eurBalanceVal === 'number' ? eurBalanceVal : 0;
+  const correctedCents = rawTotal - usdVal - eurVal + Math.round(usdVal * usdSaleRate) + Math.round(eurVal * eurSaleRate);
 
   const nbuRate = nbuUsdRate ? parseFloat(nbuUsdRate) : 40.80;
   const estimatedUsd = nbuRate > 0 ? Math.round((correctedCents / 100) / nbuRate) : 0;

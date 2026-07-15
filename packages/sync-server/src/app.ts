@@ -100,17 +100,23 @@ app.get('/pb-rate', async (req, res) => {
     }
     const data = await response.json();
     const usdRate = data?.exchangeRate?.find((r: any) => r.currency === 'USD');
-    if (usdRate) {
-      const purchaseRate = usdRate.purchaseRate || usdRate.purchaseRateNB || null;
-      const saleRate = usdRate.saleRate || usdRate.saleRateNB || null;
+    const eurRate = data?.exchangeRate?.find((r: any) => r.currency === 'EUR');
+    if (usdRate || eurRate) {
+      const purchaseRate = usdRate ? (usdRate.purchaseRate || usdRate.purchaseRateNB || null) : null;
+      const saleRate = usdRate ? (usdRate.saleRate || usdRate.saleRateNB || null) : null;
+      const eurPurchaseRate = eurRate ? (eurRate.purchaseRate || eurRate.purchaseRateNB || null) : null;
+      const eurSaleRate = eurRate ? (eurRate.saleRate || eurRate.saleRateNB || null) : null;
+
       appendLog({
         level: 'info',
         type: 'rate',
-        message: `Fetched PrivatBank exchange rate for ${formattedDate}: Purchase = ${purchaseRate} UAH, Sale = ${saleRate} UAH`
+        message: `Fetched PrivatBank exchange rates for ${formattedDate}: USD (Purchase = ${purchaseRate} UAH, Sale = ${saleRate} UAH), EUR (Purchase = ${eurPurchaseRate} UAH, Sale = ${eurSaleRate} UAH)`
       });
       return res.send({
         purchaseRate,
         saleRate,
+        eurPurchaseRate,
+        eurSaleRate,
       });
     }
   } catch (e: any) {

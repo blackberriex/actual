@@ -58,7 +58,16 @@ export type SyncedPrefs = Partial<
     | `flip-amount-${string}-${'csv' | 'qif'}`
     | `flags.${FeatureFlag}`
     | `learn-categories`
-    | `show-hidden-tags`,
+    | `show-hidden-tags`
+    | 'nbu_usd_rate'
+    | 'nbu_usd_rate_date'
+    | 'nbu_eur_rate'
+    | 'nbu_eur_rate_date'
+    | 'pb_usd_rate_date'
+    | 'pb_usd_sale_rate'
+    | 'pb_usd_purchase_rate'
+    | 'pb_eur_sale_rate'
+    | 'pb_eur_purchase_rate',
     string
   >
 >;

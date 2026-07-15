@@ -45,9 +45,15 @@ export function Accounts() {
   const [nbuUsdRateDate, setNbuUsdRateDate] = useSyncedPref('nbu_usd_rate_date');
   const [, setNbuUsdRate] = useSyncedPref('nbu_usd_rate');
 
+  const [nbuEurRateDate, setNbuEurRateDate] = useSyncedPref('nbu_eur_rate_date');
+  const [, setNbuEurRate] = useSyncedPref('nbu_eur_rate');
+
   const [pbUsdRateDate, setPbUsdRateDate] = useSyncedPref('pb_usd_rate_date');
   const [, setPbUsdSaleRate] = useSyncedPref('pb_usd_sale_rate');
   const [, setPbUsdPurchaseRate] = useSyncedPref('pb_usd_purchase_rate');
+
+  const [, setPbEurSaleRate] = useSyncedPref('pb_eur_sale_rate');
+  const [, setPbEurPurchaseRate] = useSyncedPref('pb_eur_purchase_rate');
 
   // Fetch NBU USD rate daily
   useEffect(() => {
@@ -75,7 +81,33 @@ export function Accounts() {
     return () => clearTimeout(timer);
   }, [nbuUsdRateDate, setNbuUsdRate, setNbuUsdRateDate]);
 
-  // Fetch PrivatBank USD rates daily
+  // Fetch NBU EUR rate daily
+  useEffect(() => {
+    const todayStr = currentDay();
+    if (nbuEurRateDate === todayStr) {
+      return;
+    }
+
+    async function fetchRate() {
+      try {
+        const response = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=EUR&json');
+        if (!response.ok) return;
+        const data = await response.json();
+        const rate = data?.[0]?.rate;
+        if (rate) {
+          setNbuEurRate(String(rate));
+          setNbuEurRateDate(todayStr);
+        }
+      } catch (e) {
+        console.error('Failed to fetch NBU EUR exchange rate in sidebar:', e);
+      }
+    }
+
+    const timer = setTimeout(fetchRate, 3000);
+    return () => clearTimeout(timer);
+  }, [nbuEurRateDate, setNbuEurRate, setNbuEurRateDate]);
+
+  // Fetch PrivatBank exchange rates daily
   useEffect(() => {
     const todayStr = currentDay();
     if (pbUsdRateDate === todayStr) {
@@ -85,10 +117,18 @@ export function Accounts() {
     async function fetchPbRates() {
       try {
         const res = await send('tools/pb-exchange-rate', { date: todayStr });
-        if (res && res.purchaseRate && res.saleRate) {
-          setPbUsdSaleRate(String(res.saleRate));
-          setPbUsdPurchaseRate(String(res.purchaseRate));
-          setPbUsdRateDate(todayStr);
+        if (res) {
+          if (res.purchaseRate && res.saleRate) {
+            setPbUsdSaleRate(String(res.saleRate));
+            setPbUsdPurchaseRate(String(res.purchaseRate));
+          }
+          if (res.eurPurchaseRate && res.eurSaleRate) {
+            setPbEurSaleRate(String(res.eurSaleRate));
+            setPbEurPurchaseRate(String(res.eurPurchaseRate));
+          }
+          if (res.purchaseRate || res.eurPurchaseRate) {
+            setPbUsdRateDate(todayStr);
+          }
         }
       } catch (e) {
         console.error('Failed to fetch PrivatBank exchange rates in sidebar:', e);
@@ -97,57 +137,62 @@ export function Accounts() {
 
     const timer = setTimeout(fetchPbRates, 4000);
     return () => clearTimeout(timer);
-  }, [pbUsdRateDate, setPbUsdSaleRate, setPbUsdPurchaseRate, setPbUsdRateDate]);
+  }, [pbUsdRateDate, setPbUsdSaleRate, setPbUsdPurchaseRate, setPbEurSaleRate, setPbEurPurchaseRate, setPbUsdRateDate]);
 
-  // Background transfer rate conversions (UAH -> USD)
+  // Background transfer rate conversions (UAH -> Foreign Currencies)
   useEffect(() => {
     if (accounts.length === 0) return;
 
-    const usdAccount = accounts.find(a => !a.closed && a.name?.toLowerCase().includes('usd'));
-    if (!usdAccount) return;
+    const foreignAccounts = accounts.filter(a => !a.closed && (a.name?.toLowerCase().includes('usd') || a.name?.toLowerCase().includes('eur')));
+    if (foreignAccounts.length === 0) return;
 
     let isCancelled = false;
 
     async function checkAndConvertTransfers() {
       try {
-        const usdResult = await send('query', q('transactions')
-          .filter({ account: usdAccount.id })
-          .select(['id', 'amount', 'date', 'transfer_id'])
-          .serialize()
-        );
-        const usdTxes = usdResult?.data || [];
-
-        for (const usdTx of usdTxes) {
+        for (const foreignAcc of foreignAccounts) {
           if (isCancelled) break;
-          if (!usdTx.transfer_id) continue;
+          const isUsd = foreignAcc.name?.toLowerCase().includes('usd');
 
-          const linkResult = await send('query', q('transactions')
-            .filter({ id: usdTx.transfer_id })
-            .select(['id', 'amount', 'account'])
+          const result = await send('query', q('transactions')
+            .filter({ account: foreignAcc.id })
+            .select(['id', 'amount', 'date', 'transfer_id'])
             .serialize()
           );
-          const linkTx = linkResult?.data?.[0];
-          if (!linkTx) continue;
+          const txes = result?.data || [];
 
-          const linkAccount = accounts.find(a => a.id === linkTx.account);
-          const isLinkUah = linkAccount && !linkAccount.name?.toLowerCase().includes('usd');
+          for (const tx of txes) {
+            if (isCancelled) break;
+            if (!tx.transfer_id) continue;
 
-          if (isLinkUah) {
-            if (Math.abs(usdTx.amount) === Math.abs(linkTx.amount) && usdTx.amount !== 0) {
-              console.log(`[Transfer] Found UAH->USD transfer to convert: Date=${usdTx.date}, UAH cents=${linkTx.amount}`);
-              
-              const pbRate = await send('tools/pb-exchange-rate', { date: usdTx.date });
-              const rate = pbRate?.purchaseRate;
-              
-              if (rate && rate > 0) {
-                const targetCents = Math.round(usdTx.amount / rate);
-                console.log(`[Transfer] Converting to USD cents: ${usdTx.amount} -> ${targetCents} at rate ${rate}`);
+            const linkResult = await send('query', q('transactions')
+              .filter({ id: tx.transfer_id })
+              .select(['id', 'amount', 'account'])
+              .serialize()
+            );
+            const linkTx = linkResult?.data?.[0];
+            if (!linkTx) continue;
+
+            const linkAccount = accounts.find(a => a.id === linkTx.account);
+            const isLinkUah = linkAccount && !linkAccount.name?.toLowerCase().includes('usd') && !linkAccount.name?.toLowerCase().includes('eur');
+
+            if (isLinkUah) {
+              if (Math.abs(tx.amount) === Math.abs(linkTx.amount) && tx.amount !== 0) {
+                console.log(`[Transfer] Found UAH->${isUsd ? 'USD' : 'EUR'} transfer to convert: Date=${tx.date}, UAH cents=${linkTx.amount}`);
                 
-                await send('transactions-batch-update', {
-                  updated: [{ id: usdTx.id, amount: targetCents }]
-                });
-              } else {
-                console.warn(`[Transfer] Could not fetch PrivatBank purchase rate for date ${usdTx.date}`);
+                const pbRate = await send('tools/pb-exchange-rate', { date: tx.date });
+                const rate = isUsd ? pbRate?.purchaseRate : pbRate?.eurPurchaseRate;
+                
+                if (rate && rate > 0) {
+                  const targetCents = Math.round(tx.amount / rate);
+                  console.log(`[Transfer] Converting to ${isUsd ? 'USD' : 'EUR'} cents: ${tx.amount} -> ${targetCents} at rate ${rate}`);
+                  
+                  await send('transactions-batch-update', {
+                    updated: [{ id: tx.id, amount: targetCents }]
+                  });
+                } else {
+                  console.warn(`[Transfer] Could not fetch PrivatBank rate for date ${tx.date}`);
+                }
               }
             }
           }

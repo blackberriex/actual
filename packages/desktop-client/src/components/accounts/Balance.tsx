@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import type { RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -252,7 +252,7 @@ export function Balances({
   const usdAccountBalanceQuery = useMemo(() => {
     return usdAccount
       ? bindings.accountBalance(usdAccount.id)
-      : { name: 'dummy-usd-balance', value: 0 };
+      : ({ name: 'dummy-usd-balance', value: 0 } as any);
   }, [usdAccount]);
 
   const usdBalanceVal = useSheetValue(usdAccountBalanceQuery);
