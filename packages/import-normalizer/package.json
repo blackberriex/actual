@@ -5,6 +5,9 @@
   "license": "MIT",
   "type": "commonjs",
   "main": "index.js",
+  "scripts": {
+    "sync-crypto": "node crypto-sync.js"
+  },
   "dependencies": {
     "@actual-app/api": "workspace:*",
     "csv-parse": "^6.2.1",
