@@ -230,11 +230,9 @@ async function run() {
     }
 
     // Refetch the account balance after deletion
-    accounts = await api.getAccounts();
-    const updatedAccount = accounts.find(acc => acc.id === targetAccount.id);
+    const currentBalanceCents = (await api.getAccountBalance(targetAccount.id)) ?? 0;
 
     const targetBalanceCents = Math.round(totalBase * 100);
-    const currentBalanceCents = updatedAccount.balance;
     const deltaCents = targetBalanceCents - currentBalanceCents;
 
     if (deltaCents !== 0) {
@@ -253,8 +251,8 @@ async function run() {
         cleared: true,
       };
 
-      console.log(`Adjusting balance of "${updatedAccount.name}" by ${(deltaCents / 100).toFixed(2)} ${currencySymbol} (${(currentBalanceCents / 100).toFixed(2)} -> ${(targetBalanceCents / 100).toFixed(2)})`);
-      await api.addTransactions(updatedAccount.id, [transaction]);
+      console.log(`Adjusting balance of "${targetAccount.name}" by ${(deltaCents / 100).toFixed(2)} ${currencySymbol} (${(currentBalanceCents / 100).toFixed(2)} -> ${(targetBalanceCents / 100).toFixed(2)})`);
+      await api.addTransactions(targetAccount.id, [transaction]);
       console.log('Balance adjustment successfully recorded.');
     } else {
       console.log(`Account balance is already correct at ${(targetBalanceCents / 100).toFixed(2)} ${currencySymbol}. No adjustment needed.`);
